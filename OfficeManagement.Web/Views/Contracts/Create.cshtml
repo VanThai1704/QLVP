@@ -1,0 +1,45 @@
+@model ContractCreateViewModel
+@{
+    ViewData["Title"] = "Lập hợp đồng";
+    var serviceTypes = ViewBag.ServiceTypes as IEnumerable<ServiceType>;
+}
+<h2>Lập hợp đồng thuê</h2>
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <div class="row g-3">
+        <div class="col-md-4"><label asp-for="ContractCode" class="form-label">Mã hợp đồng</label><input asp-for="ContractCode" class="form-control" /></div>
+        <div class="col-md-4"><label asp-for="TenantId" class="form-label">Khách thuê</label><select asp-for="TenantId" class="form-select" asp-items="ViewBag.Tenants"></select></div>
+        <div class="col-md-4"><label asp-for="OfficeId" class="form-label">Văn phòng còn trống</label><select asp-for="OfficeId" class="form-select" asp-items="ViewBag.Offices" id="officeSelect"></select></div>
+        <div class="col-md-4"><label asp-for="SignedDate" class="form-label">Ngày ký</label><input asp-for="SignedDate" type="date" class="form-control" /></div>
+        <div class="col-md-4"><label asp-for="StartDate" class="form-label">Ngày bắt đầu</label><input asp-for="StartDate" type="date" class="form-control" /></div>
+        <div class="col-md-4"><label asp-for="EndDate" class="form-label">Ngày kết thúc</label><input asp-for="EndDate" type="date" class="form-control" /></div>
+        <div class="col-md-4"><label asp-for="DepositAmount" class="form-label">Tiền đặt cọc (VNĐ)</label><input asp-for="DepositAmount" class="form-control" /></div>
+        <div class="col-md-4"><label asp-for="MonthlyRent" class="form-label">Giá thuê tháng (VNĐ)</label><input asp-for="MonthlyRent" class="form-control" id="monthlyRent" /></div>
+        <div class="col-md-12"><label asp-for="Terms" class="form-label">Điều khoản</label><textarea asp-for="Terms" class="form-control" rows="3"></textarea></div>
+        <div class="col-md-12">
+            <label class="form-label">Dịch vụ đi kèm</label>
+            <div class="row">
+            @foreach (var s in serviceTypes ?? [])
+            {
+                <div class="col-md-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="SelectedServiceTypeIds" value="@s.Id" id="svc_@s.Id" />
+                        <label class="form-check-label" for="svc_@s.Id">@VietnameseLabels.ServiceName(s.Name)</label>
+                    </div>
+                </div>
+            }
+            </div>
+        </div>
+    </div>
+    <div class="mt-3"><button class="btn btn-primary">Tạo hợp đồng</button><a asp-action="Index" class="btn btn-secondary">Hủy</a></div>
+</form>
+
+@section Scripts {
+<script>
+    $('#officeSelect').change(function () {
+        $.get('@Url.Action("GetOfficeRent", "Contracts")', { officeId: $(this).val() }, function (data) {
+            $('#monthlyRent').val(data.monthlyRent);
+        });
+    }).trigger('change');
+</script>
+}

@@ -1,0 +1,37 @@
+@model IEnumerable<Office>
+@{ ViewData["Title"] = "Theo dõi trạng thái phòng"; }
+
+<h2 class="mb-4">Theo dõi trạng thái văn phòng</h2>
+
+<div class="row g-3">
+@foreach (var office in Model)
+{
+    var active = office.Contracts.FirstOrDefault();
+    var cardClass = office.Status switch
+    {
+        "Available" => "border-success",
+        "Rented" => "border-danger",
+        _ => "border-warning"
+    };
+    <div class="col-md-4">
+        <div class="card @cardClass h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <h5 class="card-title">@office.Name</h5>
+                    <span class="badge badge-@office.Status.ToLower()">@VietnameseLabels.OfficeStatus(office.Status)</span>
+                </div>
+                <p class="text-muted mb-1">Phòng @office.RoomNumber · @office.Location</p>
+                <p class="mb-1">@office.Capacity người · @office.AreaSqm m² · @office.MonthlyRent.ToString("N0") đ/tháng</p>
+                @if (active is not null)
+                {
+                    <hr />
+                    <small class="text-muted">Khách thuê: @active.Tenant?.CompanyName</small>
+                }
+                <div class="mt-3">
+                    <a asp-controller="Offices" asp-action="Edit" asp-route-id="@office.Id" class="btn btn-sm btn-outline-primary">Sửa</a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+</div>

@@ -1,0 +1,27 @@
+@model Tenant
+@{ ViewData["Title"] = "Chi tiết khách thuê"; }
+<h2>@Model.CompanyName</h2>
+<dl class="row">
+    <dt class="col-sm-3">Người đại diện</dt><dd class="col-sm-9">@Model.RepresentativeName</dd>
+    <dt class="col-sm-3">Điện thoại</dt><dd class="col-sm-9">@Model.Phone</dd>
+    <dt class="col-sm-3">Email</dt><dd class="col-sm-9">@Model.Email</dd>
+    <dt class="col-sm-3">Địa chỉ</dt><dd class="col-sm-9">@Model.Address</dd>
+</dl>
+<h4>Hợp đồng</h4>
+<ul>
+@foreach (var c in Model.Contracts)
+{
+    <li>
+        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@c.Id">@c.ContractCode</a>
+        — @c.Office?.Name (@VietnameseLabels.ContractStatus(c.Status))
+    </li>
+}
+@if (!Model.Contracts.Any())
+{
+    <li class="text-muted">Chưa có hợp đồng.</li>
+}
+</ul>
+<div class="d-flex gap-2 mt-3">
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Sửa thông tin</a>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+</div>

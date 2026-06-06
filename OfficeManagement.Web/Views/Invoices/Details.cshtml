@@ -1,0 +1,70 @@
+@model Invoice
+@{ ViewData["Title"] = "Chi tiết hóa đơn"; }
+<h2>Hóa đơn @Model.InvoiceCode</h2>
+<dl class="row">
+    <dt class="col-sm-3">Hợp đồng</dt><dd class="col-sm-9">@Model.Contract?.ContractCode</dd>
+    <dt class="col-sm-3">Khách thuê</dt><dd class="col-sm-9">@Model.Contract?.Tenant?.CompanyName</dd>
+    <dt class="col-sm-3">Văn phòng</dt><dd class="col-sm-9">@Model.Contract?.Office?.Name</dd>
+    <dt class="col-sm-3">Kỳ thanh toán</dt><dd class="col-sm-9">Tháng @Model.BillingMonth/@Model.BillingYear</dd>
+    <dt class="col-sm-3">Tiền thuê VP</dt><dd class="col-sm-9">@Model.RentAmount.ToString("N0") đ</dd>
+    <dt class="col-sm-3">Tiền dịch vụ</dt><dd class="col-sm-9">@Model.ServicesSubtotal.ToString("N0") đ</dd>
+    <dt class="col-sm-3">Tổng cộng</dt><dd class="col-sm-9 fw-bold">@Model.TotalAmount.ToString("N0") đ</dd>
+    <dt class="col-sm-3">Trạng thái</dt>
+    <dd class="col-sm-9">
+        @VietnameseLabels.InvoiceStatus(Model.Status)
+        @if (Model.PaidDate.HasValue)
+        {
+            <text>(Đã TT @Model.PaidDate.Value.ToString("dd/MM/yyyy") — @VietnameseLabels.PaymentMethod(Model.PaymentMethod))</text>
+        }
+        else if (Model.Status == InvoiceStatuses.PendingPayment)
+        {
+            <text>— @VietnameseLabels.PaymentMethod(Model.PaymentMethod)</text>
+        }
+    </dd>
+</dl>
+@if (Model.Status == InvoiceStatuses.PendingPayment && User.IsInRole(AppRoles.Tenant))
+{
+    <div class="alert alert-warning">
+        <i class="bi bi-building me-1"></i>
+        Hóa đơn đang chờ thanh toán. Vui lòng đến <strong>quầy lễ tân</strong> để nộp tiền mặt và hoàn tất thủ tục.
+    </div>
+}
+@if (Model.Status == InvoiceStatuses.PendingPayment && (User.IsInRole(AppRoles.Accountant) || User.IsInRole(AppRoles.Admin) || User.IsInRole(AppRoles.Manager)))
+{
+    <div class="alert alert-info">
+        <i class="bi bi-cash-coin me-1"></i>
+        Khách đã chọn thanh toán tiền mặt. Ghi nhận thanh toán sau khi khách đến lễ tân nộp tiền.
+    </div>
+}
+<table class="table">
+    <thead><tr><th>Dịch vụ</th><th>Chỉ số cũ</th><th>Chỉ số mới</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+    <tbody>
+    @foreach (var d in Model.Details)
+    {
+        <tr>
+            <td>@VietnameseLabels.ServiceName(d.OfficeService?.ServiceType?.Name)</td>
+            <td>@d.PreviousReading</td>
+            <td>@d.CurrentReading</td>
+            <td>@d.Quantity</td>
+            <td>@d.UnitPrice.ToString("N0") đ</td>
+            <td>@d.LineTotal.ToString("N0") đ</td>
+        </tr>
+    }
+    </tbody>
+</table>
+<div class="d-flex gap-2 flex-wrap">
+    @if ((User.IsInRole(AppRoles.Accountant) || User.IsInRole(AppRoles.Admin) || User.IsInRole(AppRoles.Manager)) &&
+         (Model.Status == InvoiceStatuses.Unpaid || Model.Status == InvoiceStatuses.Overdue || Model.Status == InvoiceStatuses.PendingPayment))
+    {
+        <form asp-action="RecordPayment" method="post">@Html.AntiForgeryToken()<input type="hidden" name="id" value="@Model.Id" /><button class="btn btn-success">Ghi nhận thanh toán tại lễ tân</button></form>
+    }
+    @if (User.IsInRole(AppRoles.Tenant) && (Model.Status == InvoiceStatuses.Unpaid || Model.Status == InvoiceStatuses.Overdue))
+    {
+        <a asp-action="Pay" asp-route-id="@Model.Id" class="btn btn-success">Thanh toán ngay</a>
+    }
+    @if ((User.IsInRole(AppRoles.Accountant) || User.IsInRole(AppRoles.Admin) || User.IsInRole(AppRoles.Manager)) && Model.Status != InvoiceStatuses.Paid && Model.Status != InvoiceStatuses.Cancelled)
+    {
+        <form asp-action="Cancel" method="post" class="d-inline">@Html.AntiForgeryToken()<input type="hidden" name="id" value="@Model.Id" /><button class="btn btn-outline-danger" onclick="return confirm('Hủy hóa đơn này?')">Hủy hóa đơn</button></form>
+    }
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+</div>

@@ -1,0 +1,38 @@
+@{
+    ViewData["Title"] = "Công việc kỹ thuật";
+    var repairs = ViewBag.AssignedRepairs as IEnumerable<MaintenanceRequest>;
+}
+
+<div class="page-header">
+    <h1>Công việc được giao</h1>
+    <p class="page-subtitle">Danh sách yêu cầu sửa chữa cần xử lý</p>
+</div>
+
+<div class="table-card">
+    <table class="table">
+        <thead>
+            <tr><th>Mã YC</th><th>Văn phòng</th><th>Khách thuê</th><th>Ưu tiên</th><th>Trạng thái</th><th class="text-end">Thao tác</th></tr>
+        </thead>
+        <tbody>
+        @foreach (var r in repairs ?? [])
+        {
+            <tr>
+                <td class="fw-semibold">@r.RequestCode</td>
+                <td>@r.Office?.Name</td>
+                <td>@r.Tenant?.CompanyName</td>
+                <td>@VietnameseLabels.Priority(r.Priority)</td>
+                <td>@VietnameseLabels.MaintenanceStatus(r.Status)</td>
+                <td class="text-end">
+                    <a asp-controller="MaintenanceRequests" asp-action="UpdateProgress" asp-route-id="@r.Id" class="btn btn-sm btn-primary">
+                        <i class="bi bi-pencil-square"></i> Cập nhật
+                    </a>
+                </td>
+            </tr>
+        }
+        @if (!(repairs?.Any() ?? false))
+        {
+            <tr><td colspan="6" class="text-muted text-center py-4">Chưa có công việc được giao.</td></tr>
+        }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,35 @@
+@model MaintenanceRequest
+@{ ViewData["Title"] = "Chi tiết yêu cầu"; }
+<h2>@Model.RequestCode</h2>
+<dl class="row">
+    <dt class="col-sm-3">Văn phòng</dt><dd class="col-sm-9">@Model.Office?.Name</dd>
+    <dt class="col-sm-3">Khách thuê</dt><dd class="col-sm-9">@Model.Tenant?.CompanyName</dd>
+    <dt class="col-sm-3">Mức ưu tiên</dt><dd class="col-sm-9">@VietnameseLabels.Priority(Model.Priority)</dd>
+    <dt class="col-sm-3">Trạng thái</dt><dd class="col-sm-9">@VietnameseLabels.MaintenanceStatus(Model.Status)</dd>
+    <dt class="col-sm-3">Kỹ thuật viên</dt><dd class="col-sm-9">@(Model.AssignedEmployee?.FullName ?? "Chưa phân công")</dd>
+    <dt class="col-sm-3">Ngày tạo</dt><dd class="col-sm-9">@Model.CreatedDate.ToString("dd/MM/yyyy")</dd>
+    <dt class="col-sm-3">Ngày hoàn thành</dt><dd class="col-sm-9">@Model.CompletedDate?.ToString("dd/MM/yyyy")</dd>
+    <dt class="col-sm-3">Mô tả</dt><dd class="col-sm-9">@Model.Description</dd>
+</dl>
+<div class="d-flex gap-2 flex-wrap">
+    @if ((User.IsInRole(AppRoles.Manager) || User.IsInRole(AppRoles.Admin)) &&
+         Model.Status != MaintenanceStatuses.Completed && Model.Status != MaintenanceStatuses.Cancelled)
+    {
+        <a asp-action="Assign" asp-route-id="@Model.Id" class="btn btn-outline-primary">Phân công KTV</a>
+    }
+    @if ((User.IsInRole(AppRoles.Technician) || User.IsInRole(AppRoles.Admin)) &&
+         Model.Status != MaintenanceStatuses.Completed && Model.Status != MaintenanceStatuses.Cancelled &&
+         Model.AssignedEmployeeId.HasValue)
+    {
+        <a asp-action="UpdateProgress" asp-route-id="@Model.Id" class="btn btn-outline-success">Cập nhật tiến độ</a>
+    }
+    @if (Model.Status != MaintenanceStatuses.Completed && Model.Status != MaintenanceStatuses.Cancelled)
+    {
+        <form asp-action="Cancel" method="post" onsubmit="return confirm('Hủy yêu cầu này?')">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.Id" />
+            <button class="btn btn-outline-danger">Hủy yêu cầu</button>
+        </form>
+    }
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+</div>

@@ -1,0 +1,14 @@
+@model Tenant
+@{ ViewData["Title"] = "Sửa khách thuê"; }
+<h2>Cập nhật thông tin khách thuê</h2>
+<form asp-action="Edit" method="post" class="col-md-8">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="AccountId" />
+    <div class="mb-3"><label asp-for="CompanyName" class="form-label">Tên công ty</label><input asp-for="CompanyName" class="form-control" /></div>
+    <div class="mb-3"><label asp-for="RepresentativeName" class="form-label">Người đại diện</label><input asp-for="RepresentativeName" class="form-control" /></div>
+    <div class="mb-3"><label asp-for="Phone" class="form-label">Số điện thoại</label><input asp-for="Phone" class="form-control" /></div>
+    <div class="mb-3"><label asp-for="Email" class="form-label">Email</label><input asp-for="Email" class="form-control" /></div>
+    <div class="mb-3"><label asp-for="Address" class="form-label">Địa chỉ</label><input asp-for="Address" class="form-control" /></div>
+    <button class="btn btn-primary">Lưu</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>

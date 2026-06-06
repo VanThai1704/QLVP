@@ -1,0 +1,25 @@
+@model IEnumerable<Tenant>
+@{ ViewData["Title"] = "Khách thuê"; }
+<div class="d-flex justify-content-between mb-3">
+    <h2 class="mb-0">Quản lý khách thuê</h2>
+    <a asp-action="Create" class="btn btn-primary">Thêm khách thuê</a>
+</div>
+<table class="table table-striped">
+    <thead><tr><th>Công ty</th><th>Người đại diện</th><th>Điện thoại</th><th>Email</th><th>Số HĐ</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var t in Model)
+    {
+        <tr>
+            <td>@t.CompanyName</td>
+            <td>@t.RepresentativeName</td>
+            <td>@t.Phone</td>
+            <td>@t.Email</td>
+            <td>@t.Contracts.Count</td>
+            <td class="text-end">
+                <a asp-action="Details" asp-route-id="@t.Id" class="btn btn-sm btn-outline-secondary">Chi tiết</a>
+                <a asp-action="Edit" asp-route-id="@t.Id" class="btn btn-sm btn-outline-primary">Sửa</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

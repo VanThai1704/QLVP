@@ -1,0 +1,22 @@
+@model UpdateRepairViewModel
+@{ ViewData["Title"] = "Cập nhật tiến độ"; }
+<h2>Cập nhật @Model.RequestCode</h2>
+<p>@Model.Description</p>
+<form asp-action="UpdateProgress" method="post" class="col-md-6">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="RequestCode" />
+    <input type="hidden" asp-for="Description" />
+    <div class="mb-3">
+        <label asp-for="Status" class="form-label">Trạng thái</label>
+        <select asp-for="Status" class="form-select">
+            @foreach (var s in MaintenanceStatuses.All)
+            {
+                <option value="@s">@VietnameseLabels.MaintenanceStatus(s)</option>
+            }
+        </select>
+    </div>
+    <div class="mb-3"><label asp-for="CompletedDate" class="form-label">Ngày hoàn thành</label><input asp-for="CompletedDate" type="date" class="form-control" /></div>
+    <button class="btn btn-primary">Lưu tiến độ</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>

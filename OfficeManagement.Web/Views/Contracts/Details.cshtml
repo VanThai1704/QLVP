@@ -1,0 +1,45 @@
+@model Contract
+@{ ViewData["Title"] = "Chi tiết hợp đồng"; }
+<h2>Hợp đồng @Model.ContractCode</h2>
+<dl class="row">
+    <dt class="col-sm-3">Khách thuê</dt><dd class="col-sm-9">@Model.Tenant?.CompanyName</dd>
+    <dt class="col-sm-3">Văn phòng</dt><dd class="col-sm-9">@Model.Office?.Name — Phòng @Model.Office?.RoomNumber (@Model.Office?.Capacity người, @Model.Office?.Location)</dd>
+    <dt class="col-sm-3">Thời hạn</dt><dd class="col-sm-9">@Model.StartDate.ToString("dd/MM/yyyy") - @Model.EndDate.ToString("dd/MM/yyyy")</dd>
+    <dt class="col-sm-3">Giá thuê tháng</dt><dd class="col-sm-9">@Model.MonthlyRent.ToString("N0") đ</dd>
+    <dt class="col-sm-3">Tiền cọc</dt><dd class="col-sm-9">@Model.DepositAmount.ToString("N0") đ</dd>
+    <dt class="col-sm-3">Trạng thái</dt><dd class="col-sm-9">@VietnameseLabels.ContractStatus(Model.Status)</dd>
+    <dt class="col-sm-3">Điều khoản</dt><dd class="col-sm-9">@Model.Terms</dd>
+</dl>
+<h4>Hóa đơn</h4>
+<ul class="list-unstyled">
+@foreach (var i in Model.Invoices)
+{
+    <li class="mb-1">
+        @if (User.IsInRole(AppRoles.Tenant) || User.IsInRole(AppRoles.Manager) || User.IsInRole(AppRoles.Admin) || User.IsInRole(AppRoles.Accountant))
+        {
+            <a asp-controller="Invoices" asp-action="Details" asp-route-id="@i.Id">@i.InvoiceCode</a>
+        }
+        else
+        {
+            @i.InvoiceCode
+        }
+        — Tháng @i.BillingMonth/@i.BillingYear — @VietnameseLabels.InvoiceStatus(i.Status)
+        @if (User.IsInRole(AppRoles.Tenant) && (i.Status == InvoiceStatuses.Unpaid || i.Status == InvoiceStatuses.Overdue))
+        {
+            <a asp-controller="Invoices" asp-action="Pay" asp-route-id="@i.Id" class="btn btn-sm btn-success ms-2">Thanh toán</a>
+        }
+    </li>
+}
+@if (!Model.Invoices.Any())
+{
+    <li class="text-muted">Chưa có hóa đơn.</li>
+}
+</ul>
+<div class="d-flex gap-2 flex-wrap mt-3">
+    @if ((User.IsInRole(AppRoles.Manager) || User.IsInRole(AppRoles.Admin)) && Model.Status == ContractStatuses.Active)
+    {
+        <a asp-action="Extend" asp-route-id="@Model.Id" class="btn btn-outline-primary">Gia hạn</a>
+        <a asp-action="Terminate" asp-route-id="@Model.Id" class="btn btn-outline-danger">Kết thúc</a>
+    }
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+</div>

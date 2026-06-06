@@ -1,0 +1,14 @@
+@model Employee
+@{ ViewData["Title"] = "Sửa nhân viên"; }
+<h2>Sửa thông tin nhân viên</h2>
+<form asp-action="Edit" method="post" class="col-md-8">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="AccountId" />
+    <div class="mb-3"><label asp-for="FullName" class="form-label">Họ và tên</label><input asp-for="FullName" class="form-control" /></div>
+    <div class="mb-3"><label asp-for="Position" class="form-label">Chức vụ</label><input asp-for="Position" class="form-control" readonly /></div>
+    <div class="mb-3"><label asp-for="Phone" class="form-label">Số điện thoại</label><input asp-for="Phone" class="form-control" /></div>
+    <div class="mb-3"><label asp-for="Email" class="form-label">Email</label><input asp-for="Email" class="form-control" /></div>
+    <button class="btn btn-primary">Lưu</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>

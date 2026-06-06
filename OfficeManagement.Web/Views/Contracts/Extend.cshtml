@@ -1,0 +1,11 @@
+@model Contract
+@{ ViewData["Title"] = "Gia hạn hợp đồng"; }
+<h2>Gia hạn hợp đồng @Model.ContractCode</h2>
+<p>Ngày kết thúc hiện tại: <strong>@Model.EndDate.ToString("dd/MM/yyyy")</strong></p>
+<form asp-action="Extend" method="post" class="col-md-4">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model.Id" />
+    <div class="mb-3"><label class="form-label">Ngày kết thúc mới</label><input type="date" name="newEndDate" class="form-control" required /></div>
+    <button class="btn btn-primary">Gia hạn</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>

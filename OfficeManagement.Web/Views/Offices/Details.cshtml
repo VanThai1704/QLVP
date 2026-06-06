@@ -1,0 +1,74 @@
+@model Office
+@{ ViewData["Title"] = $"Văn phòng {Model.RoomNumber}"; }
+
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1>@Model.Name</h1>
+            <p class="page-subtitle">Phòng @Model.RoomNumber · @Model.OfficeCode</p>
+        </div>
+        <span class="badge badge-status badge-@Model.Status.ToLower() fs-6">@VietnameseLabels.OfficeStatus(Model.Status)</span>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="content-card">
+            <div class="card-header"><i class="bi bi-info-circle me-1"></i> Thông tin văn phòng</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Số phòng</dt>
+                    <dd class="col-sm-8"><strong>@Model.RoomNumber</strong></dd>
+                    <dt class="col-sm-4">Sức chứa</dt>
+                    <dd class="col-sm-8"><strong>@Model.Capacity người</strong></dd>
+                    <dt class="col-sm-4">Diện tích</dt>
+                    <dd class="col-sm-8">@Model.AreaSqm m²</dd>
+                    <dt class="col-sm-4">Vị trí</dt>
+                    <dd class="col-sm-8">@Model.Location</dd>
+                    <dt class="col-sm-4">Giá thuê</dt>
+                    <dd class="col-sm-8">@Model.MonthlyRent.ToString("N0") đ/tháng</dd>
+                    <dt class="col-sm-4">Trạng thái</dt>
+                    <dd class="col-sm-8">@VietnameseLabels.OfficeStatus(Model.Status)</dd>
+                    @if (!string.IsNullOrWhiteSpace(Model.Description))
+                    {
+                        <dt class="col-sm-4">Mô tả</dt>
+                        <dd class="col-sm-8">@Model.Description</dd>
+                    }
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        @if (Model.OfficeServices.Any(os => os.IsActive))
+        {
+            <div class="content-card">
+                <div class="card-header"><i class="bi bi-plug me-1"></i> Dịch vụ đi kèm</div>
+                <ul class="list-group list-group-flush">
+                @foreach (var os in Model.OfficeServices.Where(x => x.IsActive))
+                {
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>@VietnameseLabels.ServiceName(os.ServiceType?.Name)</span>
+                        <span class="text-muted">@os.UnitPrice.ToString("N0") đ</span>
+                    </li>
+                }
+                </ul>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="mt-3">
+    @if (User.IsInRole(AppRoles.Tenant))
+    {
+        <a asp-action="Browse" class="btn btn-secondary">Quay lại danh sách</a>
+    }
+    else if (User.IsInRole(AppRoles.Manager) || User.IsInRole(AppRoles.Admin))
+    {
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">Sửa văn phòng</a>
+        <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+    }
+    else
+    {
+        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Quay lại</a>
+    }
+</div>

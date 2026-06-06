@@ -1,0 +1,22 @@
+@model IEnumerable<Employee>
+@{ ViewData["Title"] = "Nhân viên"; }
+<div class="d-flex justify-content-between mb-3">
+    <h2>Quản lý nhân viên</h2>
+    <a asp-action="Create" class="btn btn-primary">Thêm nhân viên</a>
+</div>
+<table class="table table-striped">
+    <thead><tr><th>Họ tên</th><th>Tài khoản</th><th>Chức vụ</th><th>Điện thoại</th><th>Email</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var e in Model)
+    {
+        <tr>
+            <td>@e.FullName</td>
+            <td>@e.Account?.Username</td>
+            <td>@VietnameseLabels.Role(e.Account?.Role)</td>
+            <td>@e.Phone</td>
+            <td>@e.Email</td>
+            <td><a asp-action="Edit" asp-route-id="@e.Id" class="btn btn-sm btn-outline-primary">Sửa</a></td>
+        </tr>
+    }
+    </tbody>
+</table>

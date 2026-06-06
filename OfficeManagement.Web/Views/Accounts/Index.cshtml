@@ -1,0 +1,47 @@
+@model IEnumerable<AccountManageViewModel>
+@{ ViewData["Title"] = "Quản lý tài khoản"; }
+<h2 class="mb-3">Quản lý tài khoản hệ thống</h2>
+<table class="table table-striped align-middle">
+    <thead><tr><th>Tài khoản</th><th>Vai trò</th><th>Liên kết</th><th>Trạng thái</th><th>Ngày tạo</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var a in Model)
+    {
+        <tr>
+            <td>@a.Username</td>
+            <td>@VietnameseLabels.Role(a.Role)</td>
+            <td>@a.LinkedName</td>
+            <td>@VietnameseLabels.AccountStatus(a.Status)</td>
+            <td>@a.CreatedAt.ToString("dd/MM/yyyy")</td>
+            <td class="text-end">
+                <form asp-action="ToggleStatus" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@a.Id" />
+                    <button type="submit" class="btn btn-sm btn-outline-warning">@(a.Status == "Active" ? "Khóa" : "Mở khóa")</button>
+                </form>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#reset-@a.Id">Đặt lại MK</button>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@foreach (var a in Model)
+{
+    <div class="modal fade" id="reset-@a.Id" tabindex="-1">
+        <div class="modal-dialog">
+            <form asp-action="ResetPassword" method="post" class="modal-content">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@a.Id" />
+                <div class="modal-header"><h5 class="modal-title">Đặt lại mật khẩu — @a.Username</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <label class="form-label">Mật khẩu mới</label>
+                    <input type="password" name="newPassword" class="form-control" required minlength="6" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}

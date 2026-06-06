@@ -1,0 +1,37 @@
+@model IEnumerable<MaintenanceRequest>
+@{ ViewData["Title"] = "Yêu cầu sửa chữa"; }
+<div class="d-flex justify-content-between mb-3">
+    <h2>Quản lý sửa chữa & bảo trì</h2>
+    @if (User.IsInRole(AppRoles.Tenant))
+    {
+        <a asp-action="Create" class="btn btn-primary">Tạo yêu cầu</a>
+    }
+</div>
+<table class="table table-striped">
+    <thead><tr><th>Mã YC</th><th>Văn phòng</th><th>Khách thuê</th><th>Ưu tiên</th><th>Trạng thái</th><th>Kỹ thuật viên</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var r in Model)
+    {
+        var canOperate = r.Status != MaintenanceStatuses.Completed && r.Status != MaintenanceStatuses.Cancelled;
+        <tr>
+            <td>@r.RequestCode</td>
+            <td>@r.Office?.Name</td>
+            <td>@r.Tenant?.CompanyName</td>
+            <td>@VietnameseLabels.Priority(r.Priority)</td>
+            <td>@VietnameseLabels.MaintenanceStatus(r.Status)</td>
+            <td>@(r.AssignedEmployee?.FullName ?? "—")</td>
+            <td class="text-end">
+                <a asp-action="Details" asp-route-id="@r.Id" class="btn btn-sm btn-outline-secondary">Chi tiết</a>
+                @if (canOperate && (User.IsInRole(AppRoles.Manager) || User.IsInRole(AppRoles.Admin)))
+                {
+                    <a asp-action="Assign" asp-route-id="@r.Id" class="btn btn-sm btn-outline-primary">Phân công</a>
+                }
+                @if (canOperate && (User.IsInRole(AppRoles.Technician) || User.IsInRole(AppRoles.Admin)) && r.AssignedEmployeeId.HasValue)
+                {
+                    <a asp-action="UpdateProgress" asp-route-id="@r.Id" class="btn btn-sm btn-outline-success">Cập nhật</a>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

@@ -1,0 +1,9 @@
+@model OfficeService
+@{ ViewData["Title"] = "Gỡ dịch vụ"; }
+<h2>Gỡ @Model.ServiceType?.Name khỏi @Model.Office?.Name?</h2>
+<form asp-action="Delete" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <button class="btn btn-danger">Gỡ bỏ</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>

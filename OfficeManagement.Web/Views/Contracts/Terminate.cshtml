@@ -1,0 +1,10 @@
+@model Contract
+@{ ViewData["Title"] = "Kết thúc hợp đồng"; }
+<h2>Kết thúc hợp đồng @Model.ContractCode?</h2>
+<p>Khách thuê: @Model.Tenant?.CompanyName · Văn phòng: @Model.Office?.Name</p>
+<form asp-action="TerminateConfirmed" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model.Id" />
+    <button class="btn btn-danger">Xác nhận kết thúc</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>

@@ -1,0 +1,65 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Đăng nhập";
+    Layout = "_LoginLayout";
+}
+
+<div class="login-panel-left">
+    <h1><i class="bi bi-building me-2"></i>OfficePro</h1>
+    <p>Nền tảng quản lý văn phòng cho cao ốc văn phòng — hợp đồng, hóa đơn, dịch vụ và bảo trì trên một hệ thống.</p>
+    <ul class="login-features">
+        <li><i class="bi bi-check-circle-fill"></i> Quản lý phòng & hợp đồng thuê</li>
+        <li><i class="bi bi-check-circle-fill"></i> Lập hóa đơn & theo dõi doanh thu</li>
+        <li><i class="bi bi-check-circle-fill"></i> Yêu cầu sửa chữa trực tuyến</li>
+        <li><i class="bi bi-check-circle-fill"></i> Phân quyền theo vai trò doanh nghiệp</li>
+    </ul>
+</div>
+
+<div class="login-panel-right">
+    <div class="login-card">
+        <h2>Đăng nhập</h2>
+        <p class="login-subtitle">Truy cập hệ thống quản lý nội bộ</p>
+
+        <form asp-action="Login" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="ReturnUrl" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="Username" class="form-label">Tên đăng nhập</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                    <input asp-for="Username" class="form-control" placeholder="Nhập tên đăng nhập" />
+                </div>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label">Mật khẩu</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                    <input asp-for="Password" class="form-control" placeholder="Nhập mật khẩu" />
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 py-2">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Đăng nhập
+            </button>
+        </form>
+
+        <p class="text-center mt-3 mb-0 small">
+            Chưa có tài khoản? <a asp-action="Register">Đăng ký khách thuê</a>
+        </p>
+
+        <div class="mt-4 p-3 rounded" style="background:#f8fafc; border:1px solid #e2e8f0;">
+            <p class="small text-muted mb-2 fw-semibold">Tài khoản demo — mật khẩu: <strong>123456</strong></p>
+            <div class="row small text-muted g-1">
+                <div class="col-6"><i class="bi bi-dot"></i> huy01 — Quản lý</div>
+                <div class="col-6"><i class="bi bi-dot"></i> ktoan01 — Kế toán</div>
+                <div class="col-6"><i class="bi bi-dot"></i> thai01 — Kỹ thuật</div>
+                <div class="col-6"><i class="bi bi-dot"></i> vy01 — Khách thuê</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

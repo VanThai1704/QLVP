@@ -1,0 +1,87 @@
+@model IEnumerable<Office>
+@{
+    ViewData["Title"] = "Danh sách văn phòng";
+    var status = ViewBag.Status as string;
+}
+
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1>Văn phòng cho thuê</h1>
+            <p class="page-subtitle">Xem số phòng, sức chứa và giá thuê từng văn phòng</p>
+        </div>
+    </div>
+</div>
+
+<div class="content-card mb-4">
+    <div class="card-body">
+        <form method="get" asp-action="Browse" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label" for="status">Trạng thái</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">Tất cả</option>
+                    @foreach (var s in OfficeStatuses.All)
+                    {
+                        if (status == s)
+                        {
+                            <option value="@s" selected>@VietnameseLabels.OfficeStatus(s)</option>
+                        }
+                        else
+                        {
+                            <option value="@s">@VietnameseLabels.OfficeStatus(s)</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-funnel me-1"></i> Lọc</button>
+                <a asp-action="Browse" class="btn btn-outline-secondary">Xóa lọc</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="content-card">
+        <div class="card-body text-center text-muted py-4">Không có văn phòng phù hợp.</div>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+    @foreach (var office in Model)
+    {
+        var cardClass = office.Status switch
+        {
+            "Available" => "border-success",
+            "Rented" => "border-secondary",
+            _ => "border-warning"
+        };
+        <div class="col-md-6 col-lg-4">
+            <div class="content-card h-100 @cardClass" style="border-width: 2px;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h5 class="mb-1">@office.Name</h5>
+                            <div class="text-muted small">Phòng @office.RoomNumber · @office.OfficeCode</div>
+                        </div>
+                        <span class="badge badge-status badge-@office.Status.ToLower()">@VietnameseLabels.OfficeStatus(office.Status)</span>
+                    </div>
+                    <ul class="list-unstyled mb-3 small">
+                        <li><i class="bi bi-people me-1 text-primary"></i> Sức chứa: <strong>@office.Capacity người</strong></li>
+                        <li><i class="bi bi-arrows-angle-expand me-1 text-primary"></i> Diện tích: @office.AreaSqm m²</li>
+                        <li><i class="bi bi-geo-alt me-1 text-primary"></i> @office.Location</li>
+                        <li><i class="bi bi-cash-stack me-1 text-primary"></i> @office.MonthlyRent.ToString("N0") đ/tháng</li>
+                    </ul>
+                    @if (!string.IsNullOrWhiteSpace(office.Description))
+                    {
+                        <p class="small text-muted mb-3">@office.Description</p>
+                    }
+                    <a asp-action="Details" asp-route-id="@office.Id" class="btn btn-sm btn-outline-primary">Xem chi tiết</a>
+                </div>
+            </div>
+        </div>
+    }
+    </div>
+}

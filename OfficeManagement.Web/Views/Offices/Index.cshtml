@@ -1,0 +1,45 @@
+@model IEnumerable<Office>
+@{
+    ViewData["Title"] = "Quản lý văn phòng";
+}
+
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1>Quản lý văn phòng</h1>
+            <p class="page-subtitle">Danh sách phòng cho thuê trong tòa nhà</p>
+        </div>
+        <div class="quick-actions">
+            <a asp-action="StatusBoard" class="btn btn-outline-secondary btn-sm"><i class="bi bi-grid-3x3-gap"></i> Bảng trạng thái</a>
+            <a asp-action="Create" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Thêm văn phòng</a>
+        </div>
+    </div>
+</div>
+
+<div class="table-card">
+    <table class="table align-middle">
+        <thead>
+            <tr><th>Mã VP</th><th>Số phòng</th><th>Tên</th><th>Sức chứa</th><th>Vị trí</th><th>Diện tích</th><th>Giá thuê/tháng</th><th>Trạng thái</th><th class="text-end">Thao tác</th></tr>
+        </thead>
+        <tbody>
+        @foreach (var o in Model)
+        {
+            <tr>
+                <td class="fw-semibold">@o.OfficeCode</td>
+                <td>@o.RoomNumber</td>
+                <td>@o.Name</td>
+                <td>@o.Capacity người</td>
+                <td>@o.Location</td>
+                <td>@o.AreaSqm m²</td>
+                <td>@o.MonthlyRent.ToString("N0") đ</td>
+                <td><span class="badge badge-status badge-@o.Status.ToLower()">@VietnameseLabels.OfficeStatus(o.Status)</span></td>
+                <td class="text-end">
+                    <a asp-action="Details" asp-route-id="@o.Id" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
+                    <a asp-action="Edit" asp-route-id="@o.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                    <a asp-action="Delete" asp-route-id="@o.Id" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,53 @@
+@model TenantCreateViewModel
+@{ ViewData["Title"] = "Thêm khách thuê"; }
+<h2>Thêm khách thuê (tạo tài khoản)</h2>
+<p class="text-muted">Vui lòng nhập đầy đủ thông tin khách thuê.</p>
+<form asp-action="Create" method="post" class="col-md-8">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="Username" class="form-label"></label>
+            <input asp-for="Username" class="form-control" required />
+            <span asp-validation-for="Username" class="text-danger small"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="CompanyName" class="form-label"></label>
+            <input asp-for="CompanyName" class="form-control" required />
+            <span asp-validation-for="CompanyName" class="text-danger small"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Password" class="form-label"></label>
+            <input asp-for="Password" class="form-control" required />
+            <span asp-validation-for="Password" class="text-danger small"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="ConfirmPassword" class="form-label"></label>
+            <input asp-for="ConfirmPassword" class="form-control" required />
+            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="RepresentativeName" class="form-label"></label>
+            <input asp-for="RepresentativeName" class="form-control" required />
+            <span asp-validation-for="RepresentativeName" class="text-danger small"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Phone" class="form-label"></label>
+            <input asp-for="Phone" class="form-control" required placeholder="VD: 0901234567" />
+            <span asp-validation-for="Phone" class="text-danger small"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" type="email" class="form-control" required />
+            <span asp-validation-for="Email" class="text-danger small"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Address" class="form-label"></label>
+            <input asp-for="Address" class="form-control" required />
+            <span asp-validation-for="Address" class="text-danger small"></span>
+        </div>
+    </div>
+    <button class="btn btn-primary mt-3">Thêm khách thuê</button>
+    <a asp-action="Index" class="btn btn-secondary mt-3">Hủy</a>
+</form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

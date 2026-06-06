@@ -1,0 +1,36 @@
+@model IEnumerable<Contract>
+@{ ViewData["Title"] = "Hợp đồng thuê"; }
+<div class="d-flex justify-content-between mb-3">
+    <h2>Quản lý hợp đồng thuê</h2>
+    @if (User.IsInRole(AppRoles.Manager) || User.IsInRole(AppRoles.Admin))
+    {
+        <a asp-action="Create" class="btn btn-primary">Lập hợp đồng</a>
+    }
+</div>
+<table class="table table-striped">
+    <thead><tr><th>Mã HĐ</th><th>Khách thuê</th><th>Văn phòng</th><th>Thời hạn</th><th>Giá thuê</th><th>Trạng thái</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var c in Model)
+    {
+        <tr>
+            <td>@c.ContractCode</td>
+            <td>@c.Tenant?.CompanyName</td>
+            <td>@c.Office?.Name (P.@c.Office?.RoomNumber)</td>
+            <td>@c.StartDate.ToString("dd/MM/yyyy") - @c.EndDate.ToString("dd/MM/yyyy")</td>
+            <td>@c.MonthlyRent.ToString("N0") đ</td>
+            <td>@VietnameseLabels.ContractStatus(c.Status)</td>
+            <td class="text-end">
+                <a asp-action="Details" asp-route-id="@c.Id" class="btn btn-sm btn-outline-secondary">Chi tiết</a>
+                @if (User.IsInRole(AppRoles.Manager) || User.IsInRole(AppRoles.Admin))
+                {
+                    @if (c.Status == ContractStatuses.Active)
+                    {
+                        <a asp-action="Extend" asp-route-id="@c.Id" class="btn btn-sm btn-outline-primary">Gia hạn</a>
+                        <a asp-action="Terminate" asp-route-id="@c.Id" class="btn btn-sm btn-outline-danger">Kết thúc</a>
+                    }
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

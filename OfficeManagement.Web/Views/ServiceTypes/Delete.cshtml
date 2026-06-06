@@ -1,0 +1,9 @@
+@model ServiceType
+@{ ViewData["Title"] = "Xóa dịch vụ"; }
+<h2>Xóa dịch vụ @Model.Name?</h2>
+<form asp-action="Delete" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <button class="btn btn-danger">Xóa</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>

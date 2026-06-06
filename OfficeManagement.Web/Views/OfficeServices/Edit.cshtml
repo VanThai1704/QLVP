@@ -1,0 +1,13 @@
+@model OfficeService
+@{ ViewData["Title"] = "Sửa dịch vụ VP"; }
+<h2>Sửa dịch vụ: @Model.ServiceType?.Name — @Model.Office?.Name</h2>
+<form asp-action="Edit" method="post" class="col-md-6">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="OfficeId" />
+    <input type="hidden" asp-for="ServiceTypeId" />
+    <div class="mb-3"><label asp-for="UnitPrice" class="form-label">Đơn giá (VNĐ)</label><input asp-for="UnitPrice" class="form-control" /></div>
+    <div class="form-check mb-3"><input asp-for="IsActive" class="form-check-input" /><label asp-for="IsActive" class="form-check-label">Đang áp dụng</label></div>
+    <button class="btn btn-primary">Lưu</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>

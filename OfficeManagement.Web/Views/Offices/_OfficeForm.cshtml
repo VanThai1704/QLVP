@@ -1,0 +1,52 @@
+@model Office
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="row g-3">
+    <div class="col-md-4">
+        <label asp-for="OfficeCode" class="form-label">Mã văn phòng</label>
+        <input asp-for="OfficeCode" class="form-control" />
+        <span asp-validation-for="OfficeCode" class="text-danger small"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="RoomNumber" class="form-label"></label>
+        <input asp-for="RoomNumber" class="form-control" placeholder="VD: 101, 201A" />
+        <span asp-validation-for="RoomNumber" class="text-danger small"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Name" class="form-label">Tên văn phòng</label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger small"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Location" class="form-label">Vị trí / Tầng</label>
+        <input asp-for="Location" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="AreaSqm" class="form-label">Diện tích (m²)</label>
+        <input asp-for="AreaSqm" class="form-control" />
+        <span asp-validation-for="AreaSqm" class="text-danger small"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Capacity" class="form-label"></label>
+        <input asp-for="Capacity" class="form-control" type="number" min="1" />
+        <span asp-validation-for="Capacity" class="text-danger small"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="MonthlyRent" class="form-label">Giá thuê tháng (VNĐ)</label>
+        <input asp-for="MonthlyRent" class="form-control" />
+        <span asp-validation-for="MonthlyRent" class="text-danger small"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Status" class="form-label">Trạng thái</label>
+        <select asp-for="Status" class="form-select">
+            @foreach (var s in OfficeStatuses.All)
+            {
+                <option value="@s">@VietnameseLabels.OfficeStatus(s)</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-12">
+        <label asp-for="Description" class="form-label">Mô tả</label>
+        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+    </div>
+</div>

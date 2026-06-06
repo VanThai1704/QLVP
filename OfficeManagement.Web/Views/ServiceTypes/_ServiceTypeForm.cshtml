@@ -1,0 +1,5 @@
+@model ServiceType
+<div class="mb-3"><label asp-for="Name" class="form-label">Tên dịch vụ</label><input asp-for="Name" class="form-control" /></div>
+<div class="mb-3"><label asp-for="Unit" class="form-label">Đơn vị tính</label><input asp-for="Unit" class="form-control" placeholder="kWh, m3, Tháng..." /></div>
+<div class="mb-3"><label asp-for="DefaultUnitPrice" class="form-label">Đơn giá mặc định (VNĐ)</label><input asp-for="DefaultUnitPrice" class="form-control" /></div>
+<div class="form-check mb-3"><input asp-for="IsMetered" class="form-check-input" /><label asp-for="IsMetered" class="form-check-label">Có đồng hồ đo (điện, nước...)</label></div>

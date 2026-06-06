@@ -1,0 +1,83 @@
+@model InvoiceIndexViewModel
+@{ ViewData["Title"] = "Hóa đơn"; }
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Quản lý hóa đơn</h2>
+    @if (User.IsInRole(AppRoles.Accountant) || User.IsInRole(AppRoles.Admin) || User.IsInRole(AppRoles.Manager))
+    {
+        <a asp-action="Create" class="btn btn-primary">Lập hóa đơn tháng</a>
+    }
+</div>
+
+<div class="content-card mb-3">
+    <div class="card-body">
+        <form method="get" asp-action="Index" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label" for="status">Trạng thái</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">Tất cả trạng thái</option>
+                    @foreach (var s in InvoiceStatuses.All)
+                    {
+                        if (Model.Status == s)
+                        {
+                            <option value="@s" selected>@VietnameseLabels.InvoiceStatus(s)</option>
+                        }
+                        else
+                        {
+                            <option value="@s">@VietnameseLabels.InvoiceStatus(s)</option>
+                        }
+                    }
+                </select>
+            </div>
+            @if (!User.IsInRole(AppRoles.Tenant))
+            {
+                <div class="col-md-4">
+                    <label class="form-label" for="tenantName">Tên khách hàng</label>
+                    <input type="text" name="tenantName" id="tenantName" class="form-control"
+                           value="@Model.TenantName" placeholder="Tên công ty hoặc người đại diện" />
+                </div>
+            }
+            <div class="col-md-4">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-funnel me-1"></i> Lọc</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Xóa lọc</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (!Model.Invoices.Any())
+{
+    <div class="content-card">
+        <div class="card-body text-center text-muted py-4">
+            Không tìm thấy hóa đơn phù hợp với bộ lọc.
+        </div>
+    </div>
+}
+else
+{
+    <div class="table-card">
+        <table class="table table-striped mb-0">
+            <thead><tr><th>Mã HĐ</th><th>Hợp đồng</th><th>Kỳ</th><th>Tổng tiền</th><th>Trạng thái</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var i in Model.Invoices)
+            {
+                <tr>
+                    <td>@i.InvoiceCode</td>
+                    <td>@i.Contract?.ContractCode (@i.Contract?.Tenant?.CompanyName)</td>
+                    <td>Tháng @i.BillingMonth/@i.BillingYear</td>
+                    <td>@i.TotalAmount.ToString("N0") đ</td>
+                    <td>@VietnameseLabels.InvoiceStatus(i.Status)</td>
+                    <td class="text-end">
+                        <a asp-action="Details" asp-route-id="@i.Id" class="btn btn-sm btn-outline-secondary">Chi tiết</a>
+                        @if (User.IsInRole(AppRoles.Tenant) && (i.Status == InvoiceStatuses.Unpaid || i.Status == InvoiceStatuses.Overdue))
+                        {
+                            <a asp-action="Pay" asp-route-id="@i.Id" class="btn btn-sm btn-success">Thanh toán</a>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

@@ -1,0 +1,20 @@
+@model List<InvoiceLineInput>
+<table class="table">
+    <thead><tr><th>Dịch vụ</th><th>Chỉ số cũ</th><th>Chỉ số mới</th><th>Đơn giá</th></tr></thead>
+    <tbody>
+    @for (var i = 0; i < Model.Count; i++)
+    {
+        <tr>
+            <td>
+                @Model[i].ServiceName
+                <input type="hidden" name="Lines[@i].OfficeServiceId" value="@Model[i].OfficeServiceId" />
+                <input type="hidden" name="Lines[@i].ServiceName" value="@Model[i].ServiceName" />
+                <input type="hidden" name="Lines[@i].IsMetered" value="@Model[i].IsMetered.ToString()" />
+            </td>
+            <td><input name="Lines[@i].PreviousReading" value="@Model[i].PreviousReading" class="form-control" /></td>
+            <td><input name="Lines[@i].CurrentReading" value="@Model[i].CurrentReading" class="form-control" /></td>
+            <td><input name="Lines[@i].UnitPrice" value="@Model[i].UnitPrice" class="form-control" /></td>
+        </tr>
+    }
+    </tbody>
+</table>

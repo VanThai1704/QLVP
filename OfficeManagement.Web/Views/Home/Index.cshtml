@@ -1,0 +1,92 @@
+﻿@model DashboardViewModel
+@{
+    ViewData["Title"] = "Tổng quan";
+}
+
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1>Bảng điều khiển</h1>
+            <p class="page-subtitle">Tổng quan hoạt động tòa nhà và tài chính</p>
+        </div>
+        <div class="quick-actions">
+            <a asp-controller="Invoices" asp-action="Create" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg"></i> Lập hóa đơn
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-4">
+        <div class="card-stat">
+            <div class="stat-icon blue"><i class="bi bi-building"></i></div>
+            <div class="stat-label">Tổng văn phòng</div>
+            <div class="stat-value">@Model.TotalOffices</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-4">
+        <div class="card-stat">
+            <div class="stat-icon green"><i class="bi bi-door-open"></i></div>
+            <div class="stat-label">Văn phòng trống</div>
+            <div class="stat-value text-success">@Model.AvailableOffices</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-4">
+        <div class="card-stat">
+            <div class="stat-icon purple"><i class="bi bi-file-earmark-check"></i></div>
+            <div class="stat-label">Hợp đồng hiệu lực</div>
+            <div class="stat-value">@Model.ActiveContracts</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-4">
+        <div class="card-stat">
+            <div class="stat-icon orange"><i class="bi bi-tools"></i></div>
+            <div class="stat-label">Sửa chữa chờ xử lý</div>
+            <div class="stat-value text-warning">@Model.PendingRepairs</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-4">
+        <div class="card-stat">
+            <div class="stat-icon red"><i class="bi bi-exclamation-circle"></i></div>
+            <div class="stat-label">Hóa đơn chưa thanh toán</div>
+            <div class="stat-value text-danger">@Model.UnpaidInvoices</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-4">
+        <div class="card-stat">
+            <div class="stat-icon teal"><i class="bi bi-cash-stack"></i></div>
+            <div class="stat-label">Doanh thu tháng này</div>
+            <div class="stat-value">@Model.MonthlyRevenue.ToString("N0")<small class="fs-6 fw-normal text-muted"> đ</small></div>
+        </div>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-bar-chart-line me-1"></i> Doanh thu theo tháng</span>
+        <a asp-controller="Invoices" asp-action="Revenue" class="btn btn-sm btn-outline-primary">Xem chi tiết</a>
+    </div>
+    <div class="table-card border-0 shadow-none">
+        <table class="table">
+            <thead><tr><th>Kỳ</th><th class="text-end">Số tiền (VNĐ)</th></tr></thead>
+            <tbody>
+            @foreach (var item in Model.RevenueByMonth)
+            {
+                <tr><td>@item.Period</td><td class="text-end fw-semibold">@item.Amount.ToString("N0")</td></tr>
+            }
+            @if (!Model.RevenueByMonth.Any())
+            {
+                <tr><td colspan="2" class="text-muted text-center py-4">Chưa có hóa đơn đã thanh toán.</td></tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="quick-actions mt-4">
+    <a asp-controller="Offices" asp-action="Index" class="btn btn-outline-primary btn-sm"><i class="bi bi-building"></i> Văn phòng</a>
+    <a asp-controller="Contracts" asp-action="Index" class="btn btn-outline-primary btn-sm"><i class="bi bi-file-earmark-text"></i> Hợp đồng</a>
+    <a asp-controller="Invoices" asp-action="Index" class="btn btn-outline-primary btn-sm"><i class="bi bi-receipt"></i> Hóa đơn</a>
+    <a asp-controller="MaintenanceRequests" asp-action="Index" class="btn btn-outline-secondary btn-sm"><i class="bi bi-tools"></i> Sửa chữa</a>
+</div>

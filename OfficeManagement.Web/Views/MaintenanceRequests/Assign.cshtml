@@ -1,0 +1,11 @@
+@model AssignTechnicianViewModel
+@{ ViewData["Title"] = "Phân công kỹ thuật"; }
+<h2>Phân công kỹ thuật viên - @Model.RequestCode</h2>
+<form asp-action="Assign" method="post" class="col-md-6">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="RequestId" />
+    <input type="hidden" asp-for="RequestCode" />
+    <div class="mb-3"><label asp-for="AssignedEmployeeId" class="form-label">Kỹ thuật viên</label><select asp-for="AssignedEmployeeId" class="form-select" asp-items="ViewBag.Technicians"></select></div>
+    <button class="btn btn-primary">Phân công</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>

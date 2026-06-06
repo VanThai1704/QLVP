@@ -1,0 +1,18 @@
+@model IEnumerable<OfficeService>
+@{ ViewData["Title"] = "Dịch vụ theo văn phòng"; }
+<div class="d-flex justify-content-between mb-3"><h2>Dịch vụ theo văn phòng</h2><a asp-action="Create" class="btn btn-primary">Gán dịch vụ</a></div>
+<table class="table table-striped">
+    <thead><tr><th>Văn phòng</th><th>Dịch vụ</th><th>Đơn giá</th><th>Đang dùng</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Office?.OfficeCode - @item.Office?.Name</td>
+            <td>@VietnameseLabels.ServiceName(item.ServiceType?.Name) (@item.ServiceType?.Unit)</td>
+            <td>@item.UnitPrice.ToString("N0") đ</td>
+            <td>@(item.IsActive ? "Có" : "Không")</td>
+            <td><a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Sửa</a> <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Gỡ bỏ</a></td>
+        </tr>
+    }
+    </tbody>
+</table>

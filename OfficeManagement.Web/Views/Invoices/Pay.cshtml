@@ -1,0 +1,53 @@
+@model PaymentViewModel
+@{ ViewData["Title"] = "Thanh toán"; }
+
+<div class="page-header">
+    <h1>Thanh toán hóa đơn</h1>
+    <p class="page-subtitle">@Model.InvoiceCode — <strong>@Model.TotalAmount.ToString("N0") đ</strong></p>
+</div>
+
+<div class="content-card col-lg-7">
+    <div class="card-body">
+        <form asp-action="Pay" method="post" id="payForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="InvoiceId" />
+            <input type="hidden" asp-for="InvoiceCode" />
+            <input type="hidden" asp-for="TotalAmount" />
+            <div class="mb-3">
+                <label asp-for="PaymentMethod" class="form-label">Phương thức thanh toán</label>
+                <select asp-for="PaymentMethod" class="form-select" id="paymentMethod">
+                    @foreach (var m in PaymentMethods.All)
+                    {
+                        <option value="@m">@VietnameseLabels.PaymentMethod(m)</option>
+                    }
+                </select>
+            </div>
+            <div class="alert alert-light border small" id="bankHint">
+                <i class="bi bi-qr-code text-primary me-1"></i>
+                <span id="bankHintText">Chọn <strong>Chuyển khoản</strong> để xem mã QR và thông tin ngân hàng.</span>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success"><i class="bi bi-credit-card me-1"></i> Tiếp tục</button>
+                <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function updateHint() {
+        var method = $('#paymentMethod').val();
+        var isBank = method === '@PaymentMethods.BankTransfer';
+        var isCash = method === '@PaymentMethods.Cash';
+        $('#bankHint').toggleClass('alert-info', isBank).toggleClass('alert-warning', isCash).toggleClass('alert-light', !isBank && !isCash);
+        if (isBank) {
+            $('#bankHintText').html('Chọn <strong>Chuyển khoản</strong> — bạn sẽ được chuyển tới trang mã QR.');
+        } else if (isCash) {
+            $('#bankHintText').html('<strong>Tiền mặt:</strong> sau khi xác nhận, vui lòng đến <strong>quầy lễ tân</strong> để nộp tiền. Hóa đơn chuyển sang «Đang chờ thanh toán».');
+        }
+    }
+    $('#paymentMethod').change(updateHint);
+    updateHint();
+</script>
+}

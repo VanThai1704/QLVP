@@ -1,0 +1,55 @@
+@model MaintenanceRequest
+@{ ViewData["Title"] = "Tạo yêu cầu sửa chữa"; var hasActiveContract = ViewBag.HasActiveContract as bool? ?? true; }
+
+<div class="page-header">
+    <h1>Tạo yêu cầu sửa chữa</h1>
+    <p class="page-subtitle">Gửi yêu cầu bảo trì cho văn phòng đang thuê</p>
+</div>
+
+@if (!hasActiveContract)
+{
+    <div class="alert alert-warning"><i class="bi bi-info-circle me-1"></i> Bạn chưa có hợp đồng thuê đang hiệu lực nên không thể tạo yêu cầu sửa chữa.</div>
+}
+else
+{
+    <div class="content-card">
+        <div class="card-body">
+            <form asp-action="Create" method="post" class="col-lg-8">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+                <div class="mb-3">
+                    <label asp-for="OfficeId" class="form-label">Văn phòng</label>
+                    <select asp-for="OfficeId" class="form-select" asp-items="ViewBag.Offices" required></select>
+                    <span asp-validation-for="OfficeId" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Priority" class="form-label">Mức ưu tiên</label>
+                    <select asp-for="Priority" class="form-select">
+                        @foreach (var p in MaintenancePriorities.All)
+                        {
+                            <option value="@p">@VietnameseLabels.Priority(p)</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="CreatedDate" class="form-label">Ngày tạo</label>
+                    <input asp-for="CreatedDate" type="date" class="form-control" />
+                    <span asp-validation-for="CreatedDate" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">Mô tả sự cố</label>
+                    <textarea asp-for="Description" class="form-control" rows="4" placeholder="Mô tả chi tiết sự cố cần sửa..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-send me-1"></i> Gửi yêu cầu</button>
+                    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

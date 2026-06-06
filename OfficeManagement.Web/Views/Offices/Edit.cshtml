@@ -1,0 +1,11 @@
+@model Office
+@{ ViewData["Title"] = "Sửa văn phòng"; }
+<h2>Sửa văn phòng</h2>
+<form asp-action="Edit" method="post" class="col-md-10">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <partial name="_OfficeForm" model="@Model" />
+    <button type="submit" class="btn btn-primary">Lưu</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

@@ -1,0 +1,106 @@
+@{
+    ViewData["Title"] = "Tổng quan khách thuê";
+    var contracts = ViewBag.MyContracts as IEnumerable<Contract>;
+    var invoices = ViewBag.MyInvoices as IEnumerable<Invoice>;
+    var availableOffices = ViewBag.AvailableOffices as IEnumerable<Office>;
+}
+
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1>Xin chào, @User.Identity?.Name</h1>
+            <p class="page-subtitle">Theo dõi hợp đồng, hóa đơn và yêu cầu hỗ trợ của bạn</p>
+        </div>
+        <div class="quick-actions">
+            <a asp-controller="Offices" asp-action="Browse" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-door-open"></i> Xem văn phòng
+            </a>
+            <a asp-controller="MaintenanceRequests" asp-action="Create" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg"></i> Tạo yêu cầu sửa chữa
+            </a>
+        </div>
+    </div>
+</div>
+
+@if (availableOffices?.Any() == true)
+{
+    <div class="content-card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-door-open me-1"></i> Văn phòng còn trống</span>
+            <a asp-controller="Offices" asp-action="Browse" class="btn btn-sm btn-outline-primary">Xem tất cả</a>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+            @foreach (var o in availableOffices)
+            {
+                <div class="col-md-4">
+                    <div class="border rounded p-3 h-100">
+                        <div class="fw-semibold">@o.Name</div>
+                        <div class="small text-muted mb-2">Phòng @o.RoomNumber · @o.Location</div>
+                        <div class="small"><i class="bi bi-people"></i> Sức chứa: <strong>@o.Capacity người</strong></div>
+                        <div class="small"><i class="bi bi-arrows-angle-expand"></i> @o.AreaSqm m² · @o.MonthlyRent.ToString("N0") đ/tháng</div>
+                        <a asp-controller="Offices" asp-action="Details" asp-route-id="@o.Id" class="btn btn-sm btn-link px-0 mt-1">Chi tiết</a>
+                    </div>
+                </div>
+            }
+            </div>
+        </div>
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="content-card h-100">
+            <div class="card-header"><i class="bi bi-file-earmark-text me-1"></i> Hợp đồng gần đây</div>
+            <div class="table-card border-0 shadow-none">
+                <table class="table">
+                    <thead><tr><th>Mã HĐ</th><th>Văn phòng</th><th>Trạng thái</th></tr></thead>
+                    <tbody>
+                    @foreach (var c in contracts ?? [])
+                    {
+                        <tr>
+                            <td><a asp-controller="Contracts" asp-action="Details" asp-route-id="@c.Id">@c.ContractCode</a></td>
+                            <td>@c.Office?.Name (P.@c.Office?.RoomNumber)</td>
+                            <td>@VietnameseLabels.ContractStatus(c.Status)</td>
+                        </tr>
+                    }
+                    @if (!(contracts?.Any() ?? false))
+                    {
+                        <tr><td colspan="3" class="text-muted text-center py-3">Chưa có hợp đồng.</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="content-card h-100">
+            <div class="card-header"><i class="bi bi-receipt me-1"></i> Hóa đơn gần đây</div>
+            <div class="table-card border-0 shadow-none">
+                <table class="table">
+                    <thead><tr><th>Mã HĐ</th><th>Tổng tiền</th><th>Trạng thái</th></tr></thead>
+                    <tbody>
+                    @foreach (var i in invoices ?? [])
+                    {
+                        <tr>
+                            <td><a asp-controller="Invoices" asp-action="Details" asp-route-id="@i.Id">@i.InvoiceCode</a></td>
+                            <td>@i.TotalAmount.ToString("N0") đ</td>
+                            <td>@VietnameseLabels.InvoiceStatus(i.Status)</td>
+                        </tr>
+                    }
+                    @if (!(invoices?.Any() ?? false))
+                    {
+                        <tr><td colspan="3" class="text-muted text-center py-3">Chưa có hóa đơn.</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="quick-actions mt-4">
+    <a asp-controller="Invoices" asp-action="Index" class="btn btn-outline-primary btn-sm"><i class="bi bi-receipt"></i> Tất cả hóa đơn</a>
+    <a asp-controller="Contracts" asp-action="Index" class="btn btn-outline-primary btn-sm"><i class="bi bi-file-earmark-text"></i> Hợp đồng</a>
+    <a asp-controller="MaintenanceRequests" asp-action="Index" class="btn btn-outline-secondary btn-sm"><i class="bi bi-tools"></i> Yêu cầu sửa chữa</a>
+</div>
