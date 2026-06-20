@@ -17,6 +17,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<MaintenanceRequest> MaintenanceRequests => Set<MaintenanceRequest>();
     public DbSet<BankPaymentPending> BankPaymentPending => Set<BankPaymentPending>();
 
+    public DbSet<RentalRequest> RentalRequests => Set<RentalRequest>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -113,6 +115,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             e.HasIndex(x => new { x.InvoiceId, x.Status });
             e.HasIndex(x => x.PaymentReference);
             e.HasOne(x => x.Invoice).WithMany().HasForeignKey(x => x.InvoiceId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<RentalRequest>(e =>
+        {
+            e.HasIndex(x => new { x.OfficeId, x.TenantId, x.Status });
+            e.HasOne(x => x.Office).WithMany(x => x.RentalRequests).HasForeignKey(x => x.OfficeId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Tenant).WithMany(x => x.RentalRequests).HasForeignKey(x => x.TenantId).OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

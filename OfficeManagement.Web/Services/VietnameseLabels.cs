@@ -81,4 +81,76 @@ public static class VietnameseLabels
         "Security" => "An ninh",
         _ => name ?? string.Empty
     };
+
+    public static string RentalRequestStatus(string? status) => status switch
+    {
+        "Pending" => "Chờ duyệt",
+        "Approved" => "Đã duyệt",
+        "Rejected" => "Từ chối",
+        _ => status ?? string.Empty
+    };
+
+    public static string NumberToText(decimal amount)
+    {
+        long number = (long)Math.Round(amount, 0);
+        if (number == 0) return "Không đồng";
+
+        string[] units = { "", " nghìn", " triệu", " tỷ", " nghìn tỷ", " triệu tỷ" };
+        string[] digits = { "không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín" };
+
+        string ReadThreeDigits(int n, bool showZeroHundreds)
+        {
+            int hundreds = n / 100;
+            int tens = (n % 100) / 10;
+            int ones = n % 10;
+            string res = "";
+
+            if (hundreds > 0 || showZeroHundreds)
+            {
+                res += digits[hundreds] + " trăm ";
+            }
+
+            if (tens > 0)
+            {
+                if (tens == 1) res += "mười ";
+                else res += digits[tens] + " mươi ";
+            }
+            else if (hundreds > 0 && ones > 0)
+            {
+                res += "lẻ ";
+            }
+
+            if (ones > 0)
+            {
+                if (ones == 1 && tens > 1) res += "mốt";
+                else if (ones == 5 && tens > 0) res += "lăm";
+                else res += digits[ones];
+            }
+
+            return res.Trim();
+        }
+
+        string result = "";
+        int unitIndex = 0;
+
+        while (number > 0)
+        {
+            int group = (int)(number % 1000);
+            if (group > 0 || (number >= 1000 && number % 1000 > 0)) // Check to include units when mid-groups are non-zero
+            {
+                bool showZeroHundreds = number >= 1000;
+                string groupText = ReadThreeDigits(group, showZeroHundreds);
+                result = groupText + units[unitIndex] + " " + result;
+            }
+            number /= 1000;
+            unitIndex++;
+        }
+
+        result = result.Trim();
+        if (string.IsNullOrEmpty(result)) return "Không đồng";
+
+        result = char.ToUpper(result[0]) + result[1..] + " đồng chẵn.";
+        while (result.Contains("  ")) result = result.Replace("  ", " ");
+        return result;
+    }
 }

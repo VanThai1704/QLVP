@@ -276,6 +276,28 @@ public class InvoicesController(
         return Json(result);
     }
 
+    [AuthorizeRole(AppRoles.Tenant)]
+    [HttpPost]
+    public async Task<IActionResult> SimulatePayment(int id)
+    {
+        var tenantId = int.Parse(User.FindFirstValue("TenantId")!);
+        var invoice = await context.Invoices
+            .Include(i => i.Contract)
+            .FirstOrDefaultAsync(i => i.Id == id && i.Contract!.TenantId == tenantId);
+
+        if (invoice is null) return NotFound();
+        if (invoice.Status == InvoiceStatuses.Paid) return BadRequest("Hóa đơn đã được thanh toán.");
+
+        var reference = BankPaymentService.BuildPaymentReference(invoice.InvoiceCode);
+        var confirmed = await bankPaymentService.TryConfirmPaymentAsync(reference, invoice.TotalAmount, "SIM-" + Guid.NewGuid().ToString("N")[..8].ToUpper());
+
+        if (confirmed)
+        {
+            return Json(new { success = true, message = "Mô phỏng chuyển khoản thành công! Hệ thống đang xử lý..." });
+        }
+        return Json(new { success = false, message = "Không thể mô phỏng chuyển khoản. Vui lòng kiểm tra lại." });
+    }
+
     [AuthorizeRole(AppRoles.Accountant, AppRoles.Admin, AppRoles.Manager)]
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Cancel(int id)
@@ -324,19 +346,40 @@ public class InvoicesController(
         var contract = await context.Contracts.FindAsync(contractId);
         if (contract is null) return NotFound();
 
-        var lines = await context.OfficeServices
+        var officeServices = await context.OfficeServices
             .Include(os => os.ServiceType)
             .Where(os => os.OfficeId == contract.OfficeId && os.IsActive)
-            .Select(os => new InvoiceLineInput
+            .ToListAsync();
+
+        var lines = new List<InvoiceLineInput>();
+        foreach (var os in officeServices)
+        {
+            decimal prevReading = 0;
+            if (os.ServiceType!.IsMetered)
+            {
+                var lastDetail = await context.InvoiceDetails
+                    .Include(d => d.Invoice)
+                    .Where(d => d.OfficeServiceId == os.Id && d.Invoice!.ContractId == contract.Id && d.Invoice.Status != InvoiceStatuses.Cancelled)
+                    .OrderByDescending(d => d.Invoice!.BillingYear)
+                    .ThenByDescending(d => d.Invoice!.BillingMonth)
+                    .FirstOrDefaultAsync();
+
+                if (lastDetail is not null)
+                {
+                    prevReading = lastDetail.CurrentReading;
+                }
+            }
+
+            lines.Add(new InvoiceLineInput
             {
                 OfficeServiceId = os.Id,
-                ServiceName = os.ServiceType!.Name,
+                ServiceName = os.ServiceType.Name,
                 IsMetered = os.ServiceType.IsMetered,
                 UnitPrice = os.UnitPrice,
-                PreviousReading = 0,
-                CurrentReading = os.ServiceType.IsMetered ? 0 : 1
-            })
-            .ToListAsync();
+                PreviousReading = prevReading,
+                CurrentReading = os.ServiceType.IsMetered ? prevReading : 1
+            });
+        }
 
         return PartialView("_InvoiceLines", lines);
     }
@@ -362,19 +405,41 @@ public class InvoicesController(
             var contract = await context.Contracts.FindAsync(contractId.Value);
             if (contract is not null)
             {
-                ViewBag.Lines = await context.OfficeServices
+                var officeServices = await context.OfficeServices
                     .Include(os => os.ServiceType)
                     .Where(os => os.OfficeId == contract.OfficeId && os.IsActive)
-                    .Select(os => new InvoiceLineInput
+                    .ToListAsync();
+
+                var lines = new List<InvoiceLineInput>();
+                foreach (var os in officeServices)
+                {
+                    decimal prevReading = 0;
+                    if (os.ServiceType!.IsMetered)
+                    {
+                        var lastDetail = await context.InvoiceDetails
+                            .Include(d => d.Invoice)
+                            .Where(d => d.OfficeServiceId == os.Id && d.Invoice!.ContractId == contract.Id && d.Invoice.Status != InvoiceStatuses.Cancelled)
+                            .OrderByDescending(d => d.Invoice!.BillingYear)
+                            .ThenByDescending(d => d.Invoice!.BillingMonth)
+                            .FirstOrDefaultAsync();
+
+                        if (lastDetail is not null)
+                        {
+                            prevReading = lastDetail.CurrentReading;
+                        }
+                    }
+
+                    lines.Add(new InvoiceLineInput
                     {
                         OfficeServiceId = os.Id,
-                        ServiceName = os.ServiceType!.Name,
+                        ServiceName = os.ServiceType.Name,
                         IsMetered = os.ServiceType.IsMetered,
                         UnitPrice = os.UnitPrice,
-                        PreviousReading = 0,
-                        CurrentReading = os.ServiceType.IsMetered ? 0 : 1
-                    })
-                    .ToListAsync();
+                        PreviousReading = prevReading,
+                        CurrentReading = os.ServiceType.IsMetered ? prevReading : 1
+                    });
+                }
+                ViewBag.Lines = lines;
             }
         }
     }

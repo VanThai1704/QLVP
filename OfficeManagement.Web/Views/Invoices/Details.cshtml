@@ -66,5 +66,189 @@
     {
         <form asp-action="Cancel" method="post" class="d-inline">@Html.AntiForgeryToken()<input type="hidden" name="id" value="@Model.Id" /><button class="btn btn-outline-danger" onclick="return confirm('Hủy hóa đơn này?')">Hủy hóa đơn</button></form>
     }
+    <button onclick="window.print();" class="btn btn-outline-primary"><i class="bi bi-printer me-1"></i> In hóa đơn</button>
     <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
 </div>
+
+<!-- PRINT VIEW TEMPLATE (Hidden on screen, shown during printing) -->
+<div id="invoice-print-area">
+    <div class="print-header row mb-4">
+        <div class="col-8">
+            <h5 class="fw-bold mb-1" style="color: var(--brand-primary); font-size: 1.1rem;">CÔNG TY CỔ PHẦN QUẢN LÝ CAO ỐC OFFICEPRO</h5>
+            <p class="small text-muted mb-0">Địa chỉ: 123 Đường 3/2, Quận Ninh Kiều, TP. Cần Thơ<br />
+            Điện thoại: (0292) 3888 999 · MST: 0102030405</p>
+        </div>
+        <div class="col-4 text-end">
+            <h6 class="fw-bold mb-1">MÃ HĐ: @Model.InvoiceCode</h6>
+            <p class="small text-muted mb-0">Ngày lập: @Model.IssueDate.ToString("dd/MM/yyyy")<br />
+            Kỳ thanh toán: Tháng @Model.BillingMonth/@Model.BillingYear</p>
+        </div>
+    </div>
+
+    <hr style="border-top: 2px solid #000; margin: 1rem 0;" />
+
+    <div class="text-center my-4">
+        <h3 class="fw-bold">HÓA ĐƠN DỊCH VỤ VĂN PHÒNG</h3>
+        <p class="text-muted">Kỳ thanh toán tháng @Model.BillingMonth/@Model.BillingYear</p>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-6">
+            <h6 class="fw-bold text-secondary mb-2" style="font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase;">Khách thuê văn phòng</h6>
+            <table class="table table-borderless table-sm small text-start">
+                <tr><td style="width: 110px;" class="text-muted">Đơn vị:</td><td class="fw-semibold">@Model.Contract?.Tenant?.CompanyName</td></tr>
+                <tr><td class="text-muted">Đại diện:</td><td>@Model.Contract?.Tenant?.RepresentativeName</td></tr>
+                <tr><td class="text-muted">Điện thoại:</td><td>@Model.Contract?.Tenant?.Phone</td></tr>
+                <tr><td class="text-muted">Địa chỉ:</td><td>@Model.Contract?.Tenant?.Address</td></tr>
+            </table>
+        </div>
+        <div class="col-6">
+            <h6 class="fw-bold text-secondary mb-2" style="font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase;">Thông tin văn phòng & hợp đồng</h6>
+            <table class="table table-borderless table-sm small text-start">
+                <tr><td style="width: 110px;" class="text-muted">Hợp đồng:</td><td class="fw-semibold">@Model.Contract?.ContractCode</td></tr>
+                <tr><td class="text-muted">Văn phòng:</td><td>@Model.Contract?.Office?.Name (P.@Model.Contract?.Office?.RoomNumber)</td></tr>
+                <tr><td class="text-muted">Vị trí:</td><td>@Model.Contract?.Office?.Location</td></tr>
+                <tr><td class="text-muted">Diện tích:</td><td>@Model.Contract?.Office?.AreaSqm m²</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <table class="table table-bordered table-sm print-table mb-4">
+        <thead>
+            <tr class="text-center table-light" style="font-size: 0.85rem; font-weight: 600;">
+                <th style="width: 50px;">STT</th>
+                <th>Khoản mục thanh toán</th>
+                <th style="width: 100px;">Chỉ số đầu</th>
+                <th style="width: 100px;">Chỉ số cuối</th>
+                <th style="width: 80px;">Số lượng</th>
+                <th style="width: 130px;">Đơn giá (đ)</th>
+                <th style="width: 150px;">Thành tiền (đ)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-center">1</td>
+                <td>Phí thuê văn phòng (P.@Model.Contract?.Office?.RoomNumber)</td>
+                <td class="text-center">-</td>
+                <td class="text-center">-</td>
+                <td class="text-center">1</td>
+                <td class="text-end">@Model.RentAmount.ToString("N0")</td>
+                <td class="text-end fw-semibold">@Model.RentAmount.ToString("N0")</td>
+            </tr>
+            @{ int index = 2; }
+            @foreach (var d in Model.Details)
+            {
+                <tr>
+                    <td class="text-center">@index</td>
+                    <td>Phí dịch vụ: @VietnameseLabels.ServiceName(d.OfficeService?.ServiceType?.Name)</td>
+                    <td class="text-center">@(d.OfficeService?.ServiceType?.IsMetered == true ? d.PreviousReading.ToString("N0") : "-")</td>
+                    <td class="text-center">@(d.OfficeService?.ServiceType?.IsMetered == true ? d.CurrentReading.ToString("N0") : "-")</td>
+                    <td class="text-center">@d.Quantity.ToString("N0")</td>
+                    <td class="text-end">@d.UnitPrice.ToString("N0")</td>
+                    <td class="text-end fw-semibold">@d.LineTotal.ToString("N0")</td>
+                </tr>
+                index++;
+            }
+            <tr class="table-light">
+                <td colspan="6" class="text-end fw-bold">Tổng cộng tiền dịch vụ:</td>
+                <td class="text-end fw-bold">@Model.ServicesSubtotal.ToString("N0")</td>
+            </tr>
+            <tr class="table-light">
+                <td colspan="6" class="text-end fw-bold text-primary">TỔNG SỐ TIỀN PHẢI THANH TOÁN (đã gồm VAT):</td>
+                <td class="text-end fw-bold text-primary" style="font-size: 1.05rem;">@Model.TotalAmount.ToString("N0") đ</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="mb-4">
+        <p class="mb-1" style="font-size: 0.95rem;">Số tiền bằng chữ: <strong class="fst-italic text-decoration-underline">@VietnameseLabels.NumberToText(Model.TotalAmount)</strong></p>
+        <p class="small text-muted">(*) Ghi chú: Vui lòng thanh toán trước ngày 05 của tháng. Hóa đơn này là căn cứ thu tiền chính thức từ ban quản lý cao ốc.</p>
+    </div>
+
+    <div class="row text-center mt-5 print-signatures">
+        <div class="col-4">
+            <h6 class="fw-bold text-muted small" style="letter-spacing: 0.05em; text-transform: uppercase;">Khách thuê văn phòng</h6>
+            <p class="small text-muted mb-5">(Ký, ghi rõ họ tên)</p>
+            <div class="mt-4 text-muted">...........................................</div>
+        </div>
+        <div class="col-4">
+            <h6 class="fw-bold text-muted small" style="letter-spacing: 0.05em; text-transform: uppercase;">Người lập hóa đơn</h6>
+            <p class="small text-muted mb-5">(Ký, ghi rõ họ tên)</p>
+            <div class="mt-4 text-muted">...........................................</div>
+        </div>
+        <div class="col-4">
+            <h6 class="fw-bold text-muted small" style="letter-spacing: 0.05em; text-transform: uppercase;">Trưởng ban quản lý</h6>
+            <p class="small text-muted mb-5">(Ký tên, đóng dấu)</p>
+            <div class="mt-4 text-muted">...........................................</div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #invoice-print-area {
+        display: none;
+    }
+
+    @@media print {
+        html, body {
+            background-color: #fff !important;
+            color: #000 !important;
+            font-size: 11pt !important;
+        }
+
+        .app-sidebar, 
+        .app-topbar, 
+        .app-footer, 
+        .btn, 
+        .alert, 
+        h2, 
+        dl, 
+        table:not(.print-table), 
+        form, 
+        .gap-2, 
+        .d-flex,
+        nav,
+        aside,
+        header,
+        footer {
+            display: none !important;
+        }
+
+        body, .app-wrapper, .app-content, .app-main {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #fff !important;
+            min-height: auto !important;
+        }
+
+        #invoice-print-area {
+            display: block !important;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            padding: 30px;
+        }
+
+        .print-table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            margin-top: 15px;
+        }
+
+        .print-table th, .print-table td {
+            border: 1px solid #000 !important;
+            padding: 6px 10px !important;
+        }
+
+        .print-table thead th {
+            background-color: #f2f2f2 !important;
+            color: #000 !important;
+        }
+
+        .print-signatures {
+            margin-top: 60px !important;
+        }
+    }
+</style>
+

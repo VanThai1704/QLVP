@@ -1,5 +1,8 @@
 @model Office
-@{ ViewData["Title"] = $"Văn phòng {Model.RoomNumber}"; }
+@{
+    ViewData["Title"] = $"Văn phòng {Model.RoomNumber}";
+    var hasPendingRequest = ViewBag.HasPendingRequest as bool? ?? false;
+}
 
 <div class="page-header">
     <div class="page-header-row">
@@ -52,6 +55,43 @@
                     </li>
                 }
                 </ul>
+            </div>
+        }
+
+        @if (User.IsInRole(AppRoles.Tenant) && Model.Status == OfficeStatuses.Available)
+        {
+            <div class="content-card mt-3">
+                <div class="card-header"><i class="bi bi-send me-1"></i> Gửi yêu cầu thuê văn phòng này</div>
+                <div class="card-body">
+                    @if (hasPendingRequest)
+                    {
+                        <div class="alert alert-warning mb-0">
+                            <i class="bi bi-hourglass-split me-1"></i> Bạn đã gửi yêu cầu thuê văn phòng này. Yêu cầu đang chờ phê duyệt.
+                        </div>
+                    }
+                    else
+                    {
+                        <form asp-controller="RentalRequests" asp-action="Create" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="officeId" value="@Model.Id" />
+                            <div class="mb-3">
+                                <label class="form-label">Ngày bắt đầu thuê dự kiến</label>
+                                <input type="date" name="startDate" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Ngày kết thúc dự kiến</label>
+                                <input type="date" name="endDate" class="form-control" value="@DateTime.Today.AddYears(1).ToString("yyyy-MM-dd")" required />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Ghi chú <span class="text-muted small">(tùy chọn)</span></label>
+                                <textarea name="notes" class="form-control" rows="2" placeholder="Ví dụ: Cần chỗ cho 10 nhân viên..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-send me-1"></i> Gửi yêu cầu thuê
+                            </button>
+                        </form>
+                    }
+                </div>
             </div>
         }
     </div>

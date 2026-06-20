@@ -87,6 +87,9 @@
 <div class="d-flex flex-wrap gap-2 mt-4">
     <a asp-action="Pay" asp-route-id="@Model.InvoiceId" class="btn btn-outline-secondary btn-sm">Đổi phương thức</a>
     <a asp-action="Details" asp-route-id="@Model.InvoiceId" class="btn btn-outline-primary btn-sm">Xem hóa đơn</a>
+    <button type="button" class="btn btn-warning btn-sm fw-semibold ms-auto" id="btnSimulate">
+        <i class="bi bi-patch-check"></i> Mô phỏng CK (Demo)
+    </button>
 </div>
 
 @section Scripts {
@@ -123,5 +126,19 @@
 
     pollTimer = setInterval(checkPaymentStatus, 3000);
     checkPaymentStatus();
+
+    $('#btnSimulate').click(function () {
+        var btn = $(this);
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span> Đang giả lập...');
+        $.post('@Url.Action("SimulatePayment", "Invoices")', { id: invoiceId }, function (res) {
+            if (res.success) {
+                $('#paymentStatusText').text(res.message);
+                checkPaymentStatus();
+            } else {
+                alert(res.message);
+                btn.prop('disabled', false).html('<i class="bi bi-patch-check"></i> Mô phỏng CK (Demo)');
+            }
+        });
+    });
 </script>
 }

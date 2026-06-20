@@ -42,4 +42,5 @@ public class Office
     public ICollection<Contract> Contracts { get; set; } = [];
     public ICollection<OfficeService> OfficeServices { get; set; } = [];
     public ICollection<MaintenanceRequest> MaintenanceRequests { get; set; } = [];
+    public ICollection<RentalRequest> RentalRequests { get; set; } = [];
 }

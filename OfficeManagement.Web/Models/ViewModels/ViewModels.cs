@@ -163,6 +163,8 @@ public class DashboardViewModel
 {
     public int TotalOffices { get; set; }
     public int AvailableOffices { get; set; }
+    public int RentedOffices { get; set; }
+    public int MaintenanceOffices { get; set; }
     public int ActiveContracts { get; set; }
     public int PendingRepairs { get; set; }
     public int UnpaidInvoices { get; set; }

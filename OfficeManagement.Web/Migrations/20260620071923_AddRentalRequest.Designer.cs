@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OfficeManagement.Web.Data;
 
@@ -11,9 +12,11 @@ using OfficeManagement.Web.Data;
 namespace OfficeManagement.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260620071923_AddRentalRequest")]
+    partial class AddRentalRequest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -118,7 +121,7 @@ namespace OfficeManagement.Web.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<int?>("CreatedByEmployeeId")
+                    b.Property<int>("CreatedByEmployeeId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("DepositAmount")
@@ -584,7 +587,8 @@ namespace OfficeManagement.Web.Migrations
                     b.HasOne("OfficeManagement.Web.Models.Entities.Employee", "CreatedByEmployee")
                         .WithMany("CreatedContracts")
                         .HasForeignKey("CreatedByEmployeeId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("OfficeManagement.Web.Models.Entities.Office", "Office")
                         .WithMany("Contracts")

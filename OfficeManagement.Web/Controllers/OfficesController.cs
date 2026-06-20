@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OfficeManagement.Web.Data;
@@ -43,7 +44,22 @@ public class OfficesController(ApplicationDbContext context) : Controller
             .Include(o => o.OfficeServices).ThenInclude(os => os.ServiceType)
             .FirstOrDefaultAsync(o => o.Id == id);
 
-        return office is null ? NotFound() : View(office);
+        if (office is null) return NotFound();
+
+        if (User.IsInRole(AppRoles.Tenant))
+        {
+            var tenantIdClaim = User.FindFirstValue("TenantId");
+            if (tenantIdClaim != null)
+            {
+                var tenantId = int.Parse(tenantIdClaim);
+                ViewBag.HasPendingRequest = await context.RentalRequests.AnyAsync(r =>
+                    r.OfficeId == id &&
+                    r.TenantId == tenantId &&
+                    r.Status == RentalRequestStatuses.Pending);
+            }
+        }
+
+        return View(office);
     }
 
     [AuthorizeRole(AppRoles.Manager, AppRoles.Admin)]
@@ -93,7 +109,24 @@ public class OfficesController(ApplicationDbContext context) : Controller
             return View(office);
         }
 
+        var originalOffice = await context.Offices.AsNoTracking().FirstOrDefaultAsync(o => o.Id == id);
+        if (originalOffice is null) return NotFound();
+
         context.Update(office);
+
+        if ((office.Status == OfficeStatuses.Rented || office.Status == OfficeStatuses.Maintenance)
+            && originalOffice.Status != office.Status)
+        {
+            var pendingRequests = await context.RentalRequests
+                .Where(r => r.OfficeId == id && r.Status == RentalRequestStatuses.Pending)
+                .ToListAsync();
+
+            foreach (var req in pendingRequests)
+            {
+                req.Status = RentalRequestStatuses.Rejected;
+            }
+        }
+
         await context.SaveChangesAsync();
         TempData["Success"] = "Đã cập nhật văn phòng.";
         return RedirectToAction(nameof(Index));
@@ -121,6 +154,10 @@ public class OfficesController(ApplicationDbContext context) : Controller
             TempData["Error"] = "Không thể xóa văn phòng đang có hợp đồng hiệu lực.";
             return RedirectToAction(nameof(Index));
         }
+
+        // Delete associated RentalRequests to avoid FK violations
+        var requests = await context.RentalRequests.Where(r => r.OfficeId == id).ToListAsync();
+        context.RentalRequests.RemoveRange(requests);
 
         context.Offices.Remove(office);
         await context.SaveChangesAsync();

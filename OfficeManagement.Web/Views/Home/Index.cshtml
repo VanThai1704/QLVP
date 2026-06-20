@@ -1,4 +1,4 @@
-﻿@model DashboardViewModel
+@model DashboardViewModel
 @{
     ViewData["Title"] = "Tổng quan";
 }
@@ -62,18 +62,65 @@
     </div>
 </div>
 
-<div class="content-card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="bi bi-bar-chart-line me-1"></i> Doanh thu theo tháng</span>
-        <a asp-controller="Invoices" asp-action="Revenue" class="btn btn-sm btn-outline-primary">Xem chi tiết</a>
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="content-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-bar-chart-line me-1"></i> Xu hướng doanh thu</span>
+                <a asp-controller="Invoices" asp-action="Revenue" class="btn btn-sm btn-outline-primary">Xem báo cáo</a>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px; position: relative;">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="table-card border-0 shadow-none">
+    <div class="col-lg-4">
+        <div class="content-card h-100">
+            <div class="card-header">
+                <span><i class="bi bi-pie-chart me-1"></i> Trạng thái văn phòng</span>
+            </div>
+            <div class="card-body d-flex flex-column justify-content-center" style="min-height: 300px;">
+                <div style="height: 200px; position: relative;" class="mb-3">
+                    <canvas id="occupancyChart"></canvas>
+                </div>
+                <div class="d-flex justify-content-around text-center small mt-2">
+                    <div>
+                        <span class="badge bg-success" style="width: 12px; height: 12px; display: inline-block; border-radius: 50%; padding: 0;"></span>
+                        <div class="text-muted mt-1">Trống</div>
+                        <strong class="text-success">@Model.AvailableOffices</strong>
+                    </div>
+                    <div>
+                        <span class="badge bg-danger" style="width: 12px; height: 12px; display: inline-block; border-radius: 50%; padding: 0;"></span>
+                        <div class="text-muted mt-1">Đã thuê</div>
+                        <strong class="text-danger">@Model.RentedOffices</strong>
+                    </div>
+                    <div>
+                        <span class="badge bg-warning" style="width: 12px; height: 12px; display: inline-block; border-radius: 50%; padding: 0;"></span>
+                        <div class="text-muted mt-1">Bảo trì</div>
+                        <strong class="text-warning">@Model.MaintenanceOffices</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-table me-1"></i> Chi tiết doanh thu gần đây</span>
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRevenueTable" aria-expanded="true" aria-controls="collapseRevenueTable">
+            Ẩn/Hiện bảng dữ liệu
+        </button>
+    </div>
+    <div id="collapseRevenueTable" class="collapse show table-card border-0 shadow-none">
         <table class="table">
             <thead><tr><th>Kỳ</th><th class="text-end">Số tiền (VNĐ)</th></tr></thead>
             <tbody>
             @foreach (var item in Model.RevenueByMonth)
             {
-                <tr><td>@item.Period</td><td class="text-end fw-semibold">@item.Amount.ToString("N0")</td></tr>
+                <tr><td>@item.Period</td><td class="text-end fw-semibold">@item.Amount.ToString("N0") đ</td></tr>
             }
             @if (!Model.RevenueByMonth.Any())
             {
@@ -90,3 +137,107 @@
     <a asp-controller="Invoices" asp-action="Index" class="btn btn-outline-primary btn-sm"><i class="bi bi-receipt"></i> Hóa đơn</a>
     <a asp-controller="MaintenanceRequests" asp-action="Index" class="btn btn-outline-secondary btn-sm"><i class="bi bi-tools"></i> Sửa chữa</a>
 </div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Revenue Chart (Bar & Line Combo)
+        var revLabels = [];
+        var revData = [];
+        
+        @foreach (var item in Model.RevenueByMonth.AsEnumerable().Reverse())
+        {
+            @:revLabels.push("@item.Period");
+            @:revData.push(@item.Amount);
+        }
+
+        if (revLabels.length > 0) {
+            var ctxRev = document.getElementById('revenueChart').getContext('2d');
+            new Chart(ctxRev, {
+                type: 'bar',
+                data: {
+                    labels: revLabels,
+                    datasets: [{
+                        label: 'Doanh thu',
+                        data: revData,
+                        backgroundColor: 'rgba(30, 58, 95, 0.75)',
+                        borderColor: '#1e3a5f',
+                        borderWidth: 1.5,
+                        borderRadius: 4,
+                        order: 2
+                    }, {
+                        label: 'Xu hướng',
+                        data: revData,
+                        type: 'line',
+                        borderColor: '#0ea5e9',
+                        borderWidth: 3,
+                        fill: false,
+                        tension: 0.35,
+                        order: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    var val = context.raw || 0;
+                                    return context.dataset.label + ': ' + val.toLocaleString('vi-VN') + ' đ';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    if (value >= 1000000) {
+                                        return (value / 1000000) + ' Tr';
+                                    }
+                                    return value.toLocaleString('vi-VN');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Occupancy Chart (Doughnut)
+        var ctxOcc = document.getElementById('occupancyChart').getContext('2d');
+        new Chart(ctxOcc, {
+            type: 'doughnut',
+            data: {
+                labels: ['Trống', 'Đã thuê', 'Bảo trì'],
+                datasets: [{
+                    data: [@Model.AvailableOffices, @Model.RentedOffices, @Model.MaintenanceOffices],
+                    backgroundColor: [
+                        '#198754', // green (bg-success)
+                        '#dc3545', // red (bg-danger)
+                        '#ffc107'  // orange (bg-warning)
+                    ],
+                    borderWidth: 2,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+    });
+</script>
+}

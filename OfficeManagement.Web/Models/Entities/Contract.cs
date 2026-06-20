@@ -32,11 +32,11 @@ public class Contract
 
     public int TenantId { get; set; }
     public int OfficeId { get; set; }
-    public int CreatedByEmployeeId { get; set; }
+    public int? CreatedByEmployeeId { get; set; }
 
     public Tenant Tenant { get; set; } = null!;
     public Office Office { get; set; } = null!;
-    public Employee CreatedByEmployee { get; set; } = null!;
+    public Employee? CreatedByEmployee { get; set; }
     public ICollection<Invoice> Invoices { get; set; } = [];
 
     public bool IsActiveOn(DateTime date) =>

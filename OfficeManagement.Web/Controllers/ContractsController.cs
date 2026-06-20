@@ -35,23 +35,51 @@ public class ContractsController(ApplicationDbContext context) : Controller
     }
 
     [AuthorizeRole(AppRoles.Manager, AppRoles.Admin)]
-    public async Task<IActionResult> Create()
+    public async Task<IActionResult> Create(int? officeId = null, int? tenantId = null, string? startDate = null, string? endDate = null, int? requestId = null)
     {
-        await LoadCreateListsAsync();
-        return View(new ContractCreateViewModel());
+        await LoadCreateListsAsync(officeId);
+
+        var model = new ContractCreateViewModel();
+
+        if (officeId.HasValue)
+            model.OfficeId = officeId.Value;
+        if (tenantId.HasValue)
+            model.TenantId = tenantId.Value;
+        if (DateTime.TryParse(startDate, out var sd))
+        {
+            model.StartDate = sd;
+            model.SignedDate = sd;
+        }
+        if (DateTime.TryParse(endDate, out var ed))
+            model.EndDate = ed;
+
+        if (officeId.HasValue)
+        {
+            var office = await context.Offices.FindAsync(officeId.Value);
+            if (office != null)
+                model.MonthlyRent = office.MonthlyRent;
+        }
+
+        ViewBag.RentalRequestId = requestId;
+        return View(model);
     }
 
     [HttpPost, ValidateAntiForgeryToken]
     [AuthorizeRole(AppRoles.Manager, AppRoles.Admin)]
-    public async Task<IActionResult> Create(ContractCreateViewModel model)
+    public async Task<IActionResult> Create(ContractCreateViewModel model, int? requestId = null)
     {
         await LoadCreateListsAsync(model.OfficeId);
 
-        if (!ModelState.IsValid) return View(model);
+        if (!ModelState.IsValid)
+        {
+            ViewBag.RentalRequestId = requestId;
+            return View(model);
+        }
 
         if (model.EndDate <= model.StartDate)
         {
             ModelState.AddModelError(nameof(model.EndDate), "Ngày kết thúc phải sau ngày bắt đầu.");
+            ViewBag.RentalRequestId = requestId;
             return View(model);
         }
 
@@ -59,12 +87,14 @@ public class ContractsController(ApplicationDbContext context) : Controller
         if (office is null)
         {
             ModelState.AddModelError(nameof(model.OfficeId), "Không tìm thấy văn phòng.");
+            ViewBag.RentalRequestId = requestId;
             return View(model);
         }
 
         if (office.Status == OfficeStatuses.Maintenance)
         {
             ModelState.AddModelError(nameof(model.OfficeId), "Văn phòng đang bảo trì, không thể cho thuê.");
+            ViewBag.RentalRequestId = requestId;
             return View(model);
         }
 
@@ -77,15 +107,14 @@ public class ContractsController(ApplicationDbContext context) : Controller
         if (hasOverlap)
         {
             ModelState.AddModelError(nameof(model.OfficeId), "Văn phòng đã có hợp đồng trùng thời gian.");
+            ViewBag.RentalRequestId = requestId;
             return View(model);
         }
 
-        var employeeId = int.Parse(User.FindFirstValue("EmployeeId") ?? "0");
-        if (employeeId == 0)
-        {
-            var manager = await context.Employees.FirstOrDefaultAsync(e => e.Position == "Manager");
-            employeeId = manager?.Id ?? await context.Employees.Select(e => e.Id).FirstAsync();
-        }
+        int? employeeId = null;
+        var empClaim = User.FindFirstValue("EmployeeId");
+        if (empClaim != null)
+            employeeId = int.Parse(empClaim);
 
         var contract = new Contract
         {
@@ -125,6 +154,28 @@ public class ContractsController(ApplicationDbContext context) : Controller
         }
 
         office.Status = OfficeStatuses.Rented;
+
+        // Approve the associated rental request if present
+        if (requestId.HasValue)
+        {
+            var rentalRequest = await context.RentalRequests.FindAsync(requestId.Value);
+            if (rentalRequest != null && rentalRequest.Status == RentalRequestStatuses.Pending)
+            {
+                rentalRequest.Status = RentalRequestStatuses.Approved;
+            }
+        }
+
+        // Auto-reject all other pending requests for the same office
+        var otherPending = await context.RentalRequests
+            .Where(r => r.OfficeId == model.OfficeId && r.Status == RentalRequestStatuses.Pending)
+            .ToListAsync();
+        foreach (var r in otherPending)
+        {
+            if (requestId.HasValue && r.Id == requestId.Value)
+                continue;
+            r.Status = RentalRequestStatuses.Rejected;
+        }
+
         await context.SaveChangesAsync();
 
         TempData["Success"] = "Đã tạo hợp đồng thành công.";

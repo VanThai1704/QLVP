@@ -26,4 +26,5 @@ public class Tenant
     public Account Account { get; set; } = null!;
     public ICollection<Contract> Contracts { get; set; } = [];
     public ICollection<MaintenanceRequest> MaintenanceRequests { get; set; } = [];
+    public ICollection<RentalRequest> RentalRequests { get; set; } = [];
 }

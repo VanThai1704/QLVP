@@ -1,0 +1,83 @@
+@model IEnumerable<RentalRequest>
+@{ ViewData["Title"] = "Yêu cầu thuê văn phòng"; }
+
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1>Quản lý yêu cầu thuê</h1>
+            <p class="page-subtitle">Xem và xử lý các yêu cầu thuê văn phòng từ khách hàng</p>
+        </div>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="content-card">
+        <div class="card-body text-center text-muted py-4">
+            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+            Chưa có yêu cầu thuê nào.
+        </div>
+    </div>
+}
+else
+{
+    <div class="content-card">
+        <table class="table table-striped align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Khách thuê</th>
+                    <th>Văn phòng</th>
+                    <th>Ngày bắt đầu</th>
+                    <th>Ngày kết thúc</th>
+                    <th>Ghi chú</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày gửi</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var r in Model)
+            {
+                var badgeClass = r.Status switch
+                {
+                    "Pending" => "bg-warning text-dark",
+                    "Approved" => "bg-success",
+                    "Rejected" => "bg-danger",
+                    _ => "bg-secondary"
+                };
+                <tr>
+                    <td><strong>@r.Tenant?.CompanyName</strong></td>
+                    <td>@r.Office?.Name <span class="text-muted small">· P.@r.Office?.RoomNumber</span></td>
+                    <td>@r.StartDate.ToString("dd/MM/yyyy")</td>
+                    <td>@r.EndDate.ToString("dd/MM/yyyy")</td>
+                    <td>@(r.Notes ?? "—")</td>
+                    <td><span class="badge @badgeClass">@VietnameseLabels.RentalRequestStatus(r.Status)</span></td>
+                    <td>@r.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                    <td class="text-end">
+                        @if (r.Status == "Pending")
+                        {
+                            <a asp-controller="Contracts" asp-action="Create"
+                               asp-route-officeId="@r.OfficeId"
+                               asp-route-tenantId="@r.TenantId"
+                               asp-route-startDate="@r.StartDate.ToString("yyyy-MM-dd")"
+                               asp-route-endDate="@r.EndDate.ToString("yyyy-MM-dd")"
+                               asp-route-requestId="@r.Id"
+                               class="btn btn-sm btn-success">
+                                <i class="bi bi-check-circle me-1"></i>Phê duyệt
+                            </a>
+                            <form asp-action="Reject" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@r.Id" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('Bạn chắc chắn muốn từ chối yêu cầu này?')">
+                                    <i class="bi bi-x-circle me-1"></i>Từ chối
+                                </button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

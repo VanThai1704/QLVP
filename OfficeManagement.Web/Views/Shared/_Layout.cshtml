@@ -1,4 +1,4 @@
-﻿@using System.Security.Claims
+@using System.Security.Claims
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -44,6 +44,7 @@
                     <a class="nav-link" asp-controller="Employees" asp-action="Index"><i class="bi bi-person-badge"></i> Nhân viên</a>
                     <a class="nav-link" asp-controller="Contracts" asp-action="Index"><i class="bi bi-file-earmark-text"></i> Hợp đồng</a>
                     <a class="nav-link" asp-controller="MaintenanceRequests" asp-action="Index"><i class="bi bi-tools"></i> Sửa chữa & bảo trì</a>
+                    <a class="nav-link" asp-controller="RentalRequests" asp-action="Index"><i class="bi bi-envelope-paper"></i> Yêu cầu thuê VP</a>
                 }
 
                 @if (User.IsInRole(AppRoles.Accountant) || User.IsInRole(AppRoles.Manager) || User.IsInRole(AppRoles.Admin))
@@ -72,6 +73,7 @@
                 {
                     <div class="nav-section-label">Khách thuê</div>
                     <a class="nav-link" asp-controller="Offices" asp-action="Browse"><i class="bi bi-door-open"></i> Văn phòng cho thuê</a>
+                    <a class="nav-link" asp-controller="RentalRequests" asp-action="MyRequests"><i class="bi bi-envelope-paper"></i> Yêu cầu thuê của tôi</a>
                     <a class="nav-link" asp-controller="Contracts" asp-action="Index"><i class="bi bi-file-earmark-text"></i> Hợp đồng của tôi</a>
                     <a class="nav-link" asp-controller="Invoices" asp-action="Index"><i class="bi bi-receipt"></i> Hóa đơn của tôi</a>
                     <a class="nav-link" asp-controller="MaintenanceRequests" asp-action="Index"><i class="bi bi-tools"></i> Yêu cầu sửa chữa</a>

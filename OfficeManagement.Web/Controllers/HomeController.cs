@@ -65,6 +65,8 @@ public class HomeController(ApplicationDbContext context) : Controller
         {
             TotalOffices = await context.Offices.CountAsync(),
             AvailableOffices = await context.Offices.CountAsync(o => o.Status == OfficeStatuses.Available),
+            RentedOffices = await context.Offices.CountAsync(o => o.Status == OfficeStatuses.Rented),
+            MaintenanceOffices = await context.Offices.CountAsync(o => o.Status == OfficeStatuses.Maintenance),
             ActiveContracts = await context.Contracts.CountAsync(c => c.Status == ContractStatuses.Active),
             PendingRepairs = await context.MaintenanceRequests.CountAsync(m => m.Status == MaintenanceStatuses.Pending),
             UnpaidInvoices = await context.Invoices.CountAsync(i => i.Status == InvoiceStatuses.Unpaid),

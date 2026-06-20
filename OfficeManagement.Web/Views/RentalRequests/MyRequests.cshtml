@@ -1,0 +1,58 @@
+@model IEnumerable<RentalRequest>
+@{ ViewData["Title"] = "Yêu cầu thuê của tôi"; }
+
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1>Yêu cầu thuê văn phòng</h1>
+            <p class="page-subtitle">Theo dõi trạng thái các yêu cầu thuê bạn đã gửi</p>
+        </div>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="content-card">
+        <div class="card-body text-center text-muted py-4">
+            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+            Bạn chưa gửi yêu cầu thuê nào. Hãy <a asp-controller="Offices" asp-action="Browse">xem danh sách văn phòng</a> và gửi yêu cầu.
+        </div>
+    </div>
+}
+else
+{
+    <div class="content-card">
+        <table class="table table-striped align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Văn phòng</th>
+                    <th>Ngày bắt đầu</th>
+                    <th>Ngày kết thúc</th>
+                    <th>Ghi chú</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày gửi</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var r in Model)
+            {
+                var badgeClass = r.Status switch
+                {
+                    "Pending" => "bg-warning text-dark",
+                    "Approved" => "bg-success",
+                    "Rejected" => "bg-danger",
+                    _ => "bg-secondary"
+                };
+                <tr>
+                    <td><strong>@r.Office?.Name</strong> <span class="text-muted small">· P.@r.Office?.RoomNumber</span></td>
+                    <td>@r.StartDate.ToString("dd/MM/yyyy")</td>
+                    <td>@r.EndDate.ToString("dd/MM/yyyy")</td>
+                    <td>@(r.Notes ?? "—")</td>
+                    <td><span class="badge @badgeClass">@VietnameseLabels.RentalRequestStatus(r.Status)</span></td>
+                    <td>@r.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
